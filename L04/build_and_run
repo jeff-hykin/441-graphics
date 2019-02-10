@@ -1,0 +1,42 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use FindBin qw( $RealBin );
+use File::Basename;
+
+# helper function
+sub readFileAsString {
+    use FindBin qw( $RealBin );
+    # Get arugments
+    my ($file_relative_path) = @_; 
+    
+    open(my $fh, '<:encoding(UTF-8)', "$RealBin/$file_relative_path") or die "Could not open file '$file_relative_path' $!";
+    my $text = "";
+    while (my $row = <$fh>) {
+        $text = "$text$row";
+    }
+    return $text;
+}
+
+# Get arguments from command line
+my $object_file_name = shift(@ARGV); # second argument
+my $all_other_arguments = join(' ', @ARGV);
+
+# Get the executable name from the "PROJECT()" in CMakeLists
+readFileAsString("CMakeLists.txt") =~ /PROJECT\((.+?)\)\n/g;
+my $executable_name = $1;
+
+# make the build folder if it doesnt exist
+system("cd '$RealBin'; mkdir build &>/dev/null");
+
+# go into the build folder, and remove everything from it
+system("cd '$RealBin/build' && rm -r ../build/* &>/dev/null");
+
+# compile
+print "#\n#\n# Compiling\n#\n#\n";
+system("cd '$RealBin/build' && cmake ..");
+system("cd '$RealBin/build' && make -j4");
+
+# run
+print "#\n#\n# Running\n#\n#\n";
+system("cd '$RealBin/build' && ./$executable_name ../resources/$object_file_name $all_other_arguments");
