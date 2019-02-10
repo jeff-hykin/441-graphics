@@ -8,6 +8,6 @@ varying vec3 vCol;
 
 void main()
 {
-	gl_Position = P * MV * aPos;
-	vCol = 0.5*(aNor + 1.0);
+    gl_Position = P * MV * aPos;
+    vCol = 0.5 * (aNor + 1.0);
 }
