@@ -1,7 +1,6 @@
 #include "MatrixStack.h"
-
-#include <stdio.h>
 #include <cassert>
+#include <stdio.h>
 #include <vector>
 
 #define GLM_FORCE_RADIANS
@@ -12,8 +11,8 @@ using namespace std;
 
 MatrixStack::MatrixStack()
 {
-	mstack = make_shared< stack<glm::mat4> >();
-	mstack->push(glm::mat4(1.0));
+    mstack = make_shared<stack<glm::mat4>>();
+    mstack->push(glm::mat4(1.0));
 }
 
 MatrixStack::~MatrixStack()
@@ -22,93 +21,97 @@ MatrixStack::~MatrixStack()
 
 void MatrixStack::pushMatrix()
 {
-	const glm::mat4 &top = mstack->top();
-	mstack->push(top);
-	assert(mstack->size() < 100);
+    const glm::mat4& top = mstack->top();
+    mstack->push(top);
+    assert(mstack->size() < 100);
 }
 
 void MatrixStack::popMatrix()
 {
-	assert(!mstack->empty());
-	mstack->pop();
-	// There should always be one matrix left.
-	assert(!mstack->empty());
+    assert(!mstack->empty());
+    mstack->pop();
+    // There should always be one matrix left.
+    assert(!mstack->empty());
 }
 
 void MatrixStack::loadIdentity()
 {
-	glm::mat4 &top = mstack->top();
-	top = glm::mat4(1.0);
+    glm::mat4& top = mstack->top();
+    top            = glm::mat4(1.0);
 }
 
-void MatrixStack::translate(const glm::vec3 &t)
+void MatrixStack::translate(const glm::vec3& t)
 {
-	glm::mat4 &top = mstack->top();
-	top *= glm::translate(glm::mat4(1.0f), t);
+    glm::mat4& top = mstack->top();
+    top *= glm::translate(glm::mat4(1.0f), t);
 }
 
 void MatrixStack::translate(float x, float y, float z)
 {
-	translate(glm::vec3(x, y, z));
+    translate(glm::vec3(x, y, z));
 }
 
-void MatrixStack::scale(const glm::vec3 &s)
+void MatrixStack::scale(const glm::vec3& s)
 {
-	glm::mat4 &top = mstack->top();
-	top *= glm::scale(glm::mat4(1.0f), s);
+    glm::mat4& top = mstack->top();
+    top *= glm::scale(glm::mat4(1.0f), s);
 }
 
 void MatrixStack::scale(float x, float y, float z)
 {
-	scale(glm::vec3(x, y, z));
+    scale(glm::vec3(x, y, z));
 }
 
 void MatrixStack::scale(float s)
 {
-	scale(glm::vec3(s, s, s));
+    scale(glm::vec3(s, s, s));
 }
 
-void MatrixStack::rotate(float angle, const glm::vec3 &axis)
+void MatrixStack::rotate(float angle, const glm::vec3& axis)
 {
-	glm::mat4 &top = mstack->top();
-	top *= glm::rotate(glm::mat4(1.0f), angle, axis);
+    glm::mat4& top = mstack->top();
+    top *= glm::rotate(glm::mat4(1.0f), angle, axis);
 }
 
 void MatrixStack::rotate(float angle, float x, float y, float z)
 {
-	rotate(angle, glm::vec3(x, y, z));
+    rotate(angle, glm::vec3(x, y, z));
 }
 
-void MatrixStack::multMatrix(const glm::mat4 &matrix)
+void MatrixStack::multMatrix(const glm::mat4& matrix)
 {
-	glm::mat4 &top = mstack->top();
-	top *= matrix;
+    glm::mat4& top = mstack->top();
+    top *= matrix;
 }
 
-const glm::mat4 &MatrixStack::topMatrix() const
+const glm::mat4& MatrixStack::topMatrix() const
 {
-	return mstack->top();
+    return mstack->top();
 }
 
-void MatrixStack::print(const glm::mat4 &mat, const char *name)
+void MatrixStack::print(const glm::mat4& mat, const char* name)
 {
-	if(name) {
-		printf("%s = [\n", name);
-	}
-	for(int i = 0; i < 4; ++i) {
-		for(int j = 0; j < 4; ++j) {
-			// mat[j] returns the jth column
-			printf("%- 5.2f ", mat[j][i]);
-		}
-		printf("\n");
-	}
-	if(name) {
-		printf("];");
-	}
-	printf("\n");
+    if(name)
+        {
+            printf("%s = [\n", name);
+        }
+    for(int i = 0; i < 4; ++i)
+        {
+            for(int j = 0; j < 4; ++j)
+                {
+                    // mat[j] returns the jth column
+                    printf("%- 5.2f ", mat[j][i]);
+                }
+            printf("\n");
+        }
+    if(name)
+        {
+            printf("];");
+        }
+    printf("\n");
 }
 
-void MatrixStack::print(const char *name) const
+void MatrixStack::print(const char* name) const
 {
-	print(mstack->top(), name);
+    print(mstack->top(), name);
 }
