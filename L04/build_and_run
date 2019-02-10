@@ -19,7 +19,6 @@ sub readFileAsString {
 }
 
 # Get arguments from command line
-my $object_file_name = shift(@ARGV); # second argument
 my $all_other_arguments = join(' ', @ARGV);
 
 # Get the executable name from the "PROJECT()" in CMakeLists
@@ -39,4 +38,4 @@ system("cd '$RealBin/build' && make -j4");
 
 # run
 print "#\n#\n# Running\n#\n#\n";
-system("cd '$RealBin/build' && ./$executable_name ../resources/$object_file_name $all_other_arguments");
+system("cd '$RealBin/build' && ./$executable_name $all_other_arguments");
