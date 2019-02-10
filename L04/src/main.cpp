@@ -1,3 +1,6 @@
+#include <memory>
+#include <algorithm>
+#include <tuple>
 #include <cassert>
 #include <cstring>
 #define _USE_MATH_DEFINES
