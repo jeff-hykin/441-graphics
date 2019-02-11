@@ -4,7 +4,8 @@
         "*.ys": "gas",
         "*.glsl": "glsl",
         "stack": "cpp",
-        "functional": "cpp"
+        "functional": "cpp",
+        "vector": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }
