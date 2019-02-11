@@ -1,3 +1,6 @@
+#include <fcntl.h>               // functional progamming
+#include <type_traits>           // functional progamming
+#include <utility>               // functional progamming
 #include <memory>
 #include <algorithm>
 #include <tuple>
@@ -186,43 +189,27 @@ struct Cubeiod
         // data 
             MatrixStack& MV;
             mat4 transforms; // persistant memory of the transformations
+            function<void(void)> on_render;
+            vector<Cubeiod> children;
         // constuctors
-            Cubeiod(MatrixStack& the_matrix_stack) : MV(the_matrix_stack)
+            Cubeiod(MatrixStack& the_matrix_stack, function<void(void)> input_on_render) : MV(the_matrix_stack) 
+                {
+                    on_render = input_on_render;
+                }
+        // methods
+            void render()
                 {
                     MV.pushMatrix();
-                }
-            ~Cubeiod()
-                {
+                    // run the render function
+                    on_render();
+                    // run the render function of each of the children
+                    for (auto& each : children)
+                        {
+                            each.render();
+                        }
                     MV.popMatrix();
                 }
     };
-
-// struct Cubeoid
-//     {
-//         mat4 transforms_for_cube;
-//         // keep track of all the vertexes;
-//         vec3 front_top_right_point     ( 1, 1, 1);
-//         vec3 front_bottom_right_point  ( 1,-1, 1);
-//         vec3 front_bottom_left_point   (-1,-1, 1);
-//         vec3 front_top_left_point      (-1, 1, 1);
-//         vec3 back_top_right_point      ( 1, 1,-1);
-//         vec3 back_bottom_right_point   ( 1,-1,-1);
-//         vec3 back_bottom_left_point    (-1,-1,-1);
-//         vec3 back_top_left_point       (-1, 1,-1);
-        
-//         void transform(mat4 transformation)
-//             {
-//                 transforms_for_cube *= transformation;
-//             }
-        
-//         // create 6 points for cubeoid
-//         // all operations get done to all 6 points
-//         // have a "rotate about" function
-//         void rotateAbout(vec3 point, vec3 angles)
-//             {
-                
-//             }
-//     };
 
 
 #define drawTheLetterA                                                                  \

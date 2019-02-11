@@ -3,7 +3,8 @@
         "*.prejs": "javascript",
         "*.ys": "gas",
         "*.glsl": "glsl",
-        "stack": "cpp"
+        "stack": "cpp",
+        "functional": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }
