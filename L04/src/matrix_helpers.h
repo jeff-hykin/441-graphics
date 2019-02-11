@@ -271,7 +271,7 @@ struct Cubeiod
 
 
 // 
-// to add a variable to the shader shader variable
+// VertexShader
 //
 // summary:
 //     this is a wrapper to make the code cleaner and more safe
@@ -280,7 +280,7 @@ struct VertexShader
     {
         // data
             GLuint id;
-            string name;
+            string file_location;
             vector<GLuint> attached_programs;
             map<string, GLint> attribute_location_ids;
             // conditially add safety checks
@@ -290,11 +290,11 @@ struct VertexShader
         // member functions
             void loadFromFile(string location_of_shader_file)
                 {
-                    name = location_of_shader_file;
+                    file_location = location_of_shader_file;
                     // create the shader
                     id = glCreateShader(GL_VERTEX_SHADER);
                     // get shader from file
-                    const char* vShaderText = GLSL::textFileRead(name.c_str());
+                    const char* vShaderText = GLSL::textFileRead(file_location.c_str());
                     glShaderSource(id, 1, &vShaderText, NULL);
                     // Compile the shader
                     int rc;
@@ -303,8 +303,112 @@ struct VertexShader
                     if(!rc)
                         {
                             GLSL::printShaderInfoLog(id);
-                            cerr << "Error compiling vertex shader " << name << endl;
+                            cerr << "Error compiling vertex shader " << file_location << endl;
                             exit(0);
+                        }
+                }
+            void attachTo(GLuint program_id)
+                {
+                    // attach the shader to the program
+                    glAttachShader(program_id, id);
+                    attached_programs.push_back(program_id);
+                }
+            // call this inside init
+            void addAttribute(string attribute_name)
+                {
+                    for (auto each_program : attached_programs)
+                        {
+                            attribute_location_ids[attribute_name]  = glGetUniformLocation(each_program, attribute_name.c_str());
+                        }
+                }
+            // at the top of render
+            void onRenderStart()
+                {
+                    // for each attribute, enable it
+                    for (auto& key_value_pair : attribute_location_ids) 
+                        {
+                            glEnableVertexAttribArray(key_value_pair.second);
+                            
+                            // conditionally run safety checks
+                            #ifndef NO_RUNTIME_CHECKS
+                                data_has_been_sent_for[key_value_pair.first] = false;
+                            #endif
+                        }
+                }
+            // in the middle of render
+            template <class ANYTYPE> 
+            void sendData(string attribute_name, ANYTYPE& data)
+                {
+                    // conditionally run safety checks
+                    #ifndef NO_RUNTIME_CHECKS
+                        if (data_has_been_sent_for[attribute_name] == true)
+                            {
+                                cerr << "Durning render, there was an vertex shader attribute: " << attribute_name << " that was sent data twice\nmeaning vertex_shader.sendData() was probably called twice on it. (To fix this make sure it is only called once)\n";
+                                exit(0);
+                            }
+                        data_has_been_sent_for[attribute_name] = true;
+                    #endif
+                    // send the data to the GPU
+                    glVertexAttribPointer(attribute_location_ids[attribute_name], sizeof(data)/sizeof(GL_FLOAT), GL_FLOAT, false, 0, &data);
+                }
+            // at the end of render
+            void onRenderEnd()
+                {
+                    // for each attribute, disable it
+                    for (auto& key_value_pair : attribute_location_ids) 
+                        {
+                            glDisableVertexAttribArray(key_value_pair.second);
+                            
+                            // conditionally run safety checks
+                            #ifndef NO_RUNTIME_CHECKS
+                                if (data_has_been_sent_for[key_value_pair.first] == false)
+                                    {
+                                        cerr << "Durning render, there was an vertex shader attribute: " << key_value_pair.first << " that didnt get any data\nmeaning vertex_shader.sendData() was probably never called. (To fix this make sure it is called once)\n";
+                                        exit(0);
+                                    }
+                            #endif
+                        }
+                }
+    };
+
+
+//
+// FragmentShader
+//
+// summary:
+//     this is a wrapper to make the code cleaner and more safe
+//     if you don't care about safety and only want speed: then add #define NO_RUNTIME_CHECKS before including this file
+struct FragmentShader
+    {
+        // data
+            GLuint id;
+            string file_location;
+            vector<GLuint> attached_programs;
+            map<string, GLint> attribute_location_ids;
+            // conditially add safety checks
+            #ifndef NO_RUNTIME_CHECKS
+                map<string, bool> data_has_been_sent_for;
+            #endif
+        // member functions
+            void loadFromFile(string location_of_shader_file)
+                {
+                    file_location = location_of_shader_file;
+                    // Create shader handles
+                    id = glCreateShader(GL_FRAGMENT_SHADER);
+
+                    // Read shader sources
+                    const char* fShaderText = GLSL::textFileRead(file_location.c_str());
+                    glShaderSource(id, 1, &fShaderText, NULL);
+
+                    // Compile fragment shader
+                    int rc;
+                    glCompileShader(id);
+                    glGetShaderiv(id, GL_COMPILE_STATUS, &rc);
+                    if(!rc)
+                        {
+                            GLSL::printShaderInfoLog(id);
+                            cout << "Error compiling fragment shader " << file_location << endl;
+                            return;
                         }
                 }
             void attachTo(GLuint program_id)

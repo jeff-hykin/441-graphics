@@ -46,6 +46,7 @@ MatrixStack MV;
     map<string, GLint>  unifIDs;
     map<string, GLuint> bufIDs;
     VertexShader        vertex_shader;
+    FragmentShader      fragment_shader;
     int                 indCount;
     vec3 global_rotation;
     vec3 global_translation(0,0,-2.5);
@@ -103,43 +104,24 @@ MatrixStack MV;
             //
             // GLSL program setup
             //
-                // Create the vertex shader
+                // load the shaders
                 vertex_shader.loadFromFile(RESOURCE_DIR + "vert.glsl");
-
-                // Create shader handles
-                GLuint fShaderID = glCreateShader(GL_FRAGMENT_SHADER);
-
-                // Read shader sources
-                string      fShaderName = RESOURCE_DIR + "frag.glsl";
-                const char* fShaderText = GLSL::textFileRead(fShaderName.c_str());
-                glShaderSource(fShaderID, 1, &fShaderText, NULL);
-
-                // Compile fragment shader
-                int rc;
-                glCompileShader(fShaderID);
-                glGetShaderiv(fShaderID, GL_COMPILE_STATUS, &rc);
-                if(!rc)
-                    {
-                        GLSL::printShaderInfoLog(fShaderID);
-                        cout << "Error compiling fragment shader " << fShaderName << endl;
-                        return;
-                    }
+                fragment_shader.loadFromFile(RESOURCE_DIR + "frag.glsl");
 
                 // Create the program and link the shaders
                 progID = glCreateProgram();
                 // initilize the vertex shader
                 vertex_shader.attachTo(progID);
-            
-                glAttachShader(progID, fShaderID);
+                fragment_shader.attachTo(progID);
+                int rc;
                 glLinkProgram(progID);
                 glGetProgramiv(progID, GL_LINK_STATUS, &rc);
                 if(!rc)
                     {
                         GLSL::printProgramInfoLog(progID);
-                        cout << "Error linking shaders " << vertex_shader.name << " and " << fShaderName << endl;
+                        cout << "Error linking shaders " << vertex_shader.file_location << " and " << fragment_shader.file_location << endl;
                         return;
                     }
-                
                 
                 // Get vertex attribute IDs
                 attrIDs["aPos"] = glGetAttribLocation(progID, "aPos");
