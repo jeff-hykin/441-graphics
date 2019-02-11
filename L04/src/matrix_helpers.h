@@ -318,7 +318,7 @@ struct VertexShader
                 {
                     for (auto each_program : attached_programs)
                         {
-                            attribute_location_ids[attribute_name]  = glGetUniformLocation(each_program, attribute_name.c_str());
+                            attribute_location_ids[attribute_name]  = glGetAttribLocation(each_program, attribute_name.c_str());
                         }
                 }
             // at the top of render
