@@ -184,7 +184,51 @@ struct KeyMapperClass
 extern KeyMapperClass key_mapper; // declare
 KeyMapperClass key_mapper; // init
 
-struct Cubeiod
+
+
+struct Renderable
+    {
+        static void renderStart();
+        Renderable() {};
+        void onRenderStart() {};
+        void render() {};
+        void onRenderEnd() {};
+    };
+
+struct RenderManager
+    {
+        vector<Renderable> renderables;
+        void add(Renderable& a_renderable)
+            {
+                renderables.push_back(a_renderable);
+            }
+        void renderStart()
+            {
+                // run all the render start functions
+                for (auto& each : renderables)
+                    {
+                        each.onRenderStart();
+                    }
+            }
+        void renderMain()
+            {
+                // run all the render functions
+                for (auto& each : renderables)
+                    {
+                        each.render();
+                    }
+            }
+        void renderEnd()
+            {
+                // run all the render end functions in reverse order
+                for(vector<Renderable>::reverse_iterator iterator_index = renderables.rbegin(); iterator_index != renderables.rend(); ++iterator_index)
+                    {
+                        iterator_index->onRenderEnd();
+                    }
+            }
+    };
+
+struct Cubeiod : public Renderable
     {
         // data 
             MatrixStack& MV;
@@ -244,7 +288,7 @@ struct Cubeiod
 // summary:
 //     this is a wrapper to make the code cleaner and more safe
 //     if you don't care about safety and only want speed: then add #define NO_RUNTIME_CHECKS before including this file
-struct VertexShader
+struct VertexShader : public Renderable
     {
         // data
             GLuint id;
@@ -255,6 +299,8 @@ struct VertexShader
             #ifndef NO_RUNTIME_CHECKS
                 map<string, bool> data_has_been_sent_for;
             #endif
+        // constructor 
+            VertexShader() {};
         // member functions
             void loadFromFile(string location_of_shader_file)
                 {

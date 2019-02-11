@@ -45,9 +45,10 @@ MatrixStack MV;
     map<string, GLint>  attrIDs;
     map<string, GLint>  unifIDs;
     map<string, GLuint> bufIDs;
+    int                 indCount;
     VertexShader        vertex_shader;
     FragmentShader      fragment_shader;
-    int                 indCount;
+    RenderManager       render_manager;
     vec3 global_rotation;
     vec3 global_translation(0,0,0);
 
@@ -203,6 +204,10 @@ MatrixStack MV;
                 assert(norBuf.size() == posBuf.size());
 
                 GLSL::checkError(GET_FILE_LINE);
+            // 
+            // Attach renderables
+            //
+                render_manager.add(vertex_shader);
         }
 
     // This function is called every frame to draw the scene.
@@ -239,7 +244,7 @@ MatrixStack MV;
                 // Set the pointer -- the data is already on the GPU
                 glVertexAttribPointer(attrIDs["aNor"], 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
                 // setup the shader
-                vertex_shader.onRenderStart();
+                render_manager.renderStart();
                 
                 MV.pushMatrix();
                 // reset the keybinding each frame
@@ -250,7 +255,7 @@ MatrixStack MV;
             
             
             
-            
+                render_manager.renderMain();
             
             // move the global object if  when keys are pressed down 
             if (not key_mapper.has_been_bound_already_for_this_frame)
@@ -274,7 +279,7 @@ MatrixStack MV;
                 // Disable the attribute
                 glDisableVertexAttribArray(attrIDs["aPos"]);
                 // close the shader bindings
-                vertex_shader.onRenderEnd();
+                render_manager.renderEnd();
                 // Unbind our GLSL program
                 glUseProgram(0);
 
