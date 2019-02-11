@@ -296,7 +296,8 @@ namespace tinyobj
         virtual ~MaterialStreamReader() {}
         virtual bool operator()(const std::string&          matId,
                                 std::vector<material_t>*    materials,
-                                std::map<std::string, int>* matMap, std::string* err);
+                                std::map<std::string, int>* matMap, 
+                                std::string* err);
 
       private:
         std::istream& m_inStream;
@@ -664,7 +665,8 @@ namespace tinyobj
     }
 
     static inline void parseV(float* x, float* y, float* z, float* w,
-                              const char** token, const double default_x = 0.0,
+                              const char** token, 
+                              const double default_x = 0.0,
                               const double default_y = 0.0,
                               const double default_z = 0.0,
                               const double default_w = 1.0)
