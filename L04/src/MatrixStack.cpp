@@ -84,7 +84,7 @@ void MatrixStack::multMatrix(const glm::mat4& matrix)
     top *= matrix;
 }
 
-const glm::mat4& MatrixStack::topMatrix() const
+glm::mat4& MatrixStack::topMatrix()
 {
     return mstack->top();
 }

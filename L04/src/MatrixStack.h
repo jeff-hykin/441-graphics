@@ -35,7 +35,7 @@ class MatrixStack
     void rotate(float angle, float x, float y, float z);
 
     // glGet(GL_MODELVIEW_MATRIX): Gets the top matrix
-    const glm::mat4& topMatrix() const;
+    glm::mat4& topMatrix();
 
     // Prints out the specified matrix
     static void print(const glm::mat4& mat, const char* name = 0);
