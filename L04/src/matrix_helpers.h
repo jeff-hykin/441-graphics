@@ -35,6 +35,9 @@ using namespace helpers;
 
 #define DEFAULT_MATRIX_VALUE f32, defaultp
 
+// 
+// Vector wrapper
+// 
 template <int ROWS=1>
 struct Vector
     {
@@ -60,6 +63,11 @@ struct Vector
         }
 
 
+
+// 
+// Matrix wrapper for accessing sub elements safely
+//
+// (made this for lab3, but its not really needed after that)
 template <int ROWS=1, int COLUMNS=1>
 struct Matrix
     {
@@ -78,6 +86,9 @@ struct Matrix
                 }
             return output_stream;
         }
+
+
+
 
 
 // output
@@ -109,15 +120,108 @@ mat4 createTranslationMatrix(vec3 const& translation)
     }
     
 
+struct KeyMapperClass
+    {
+        // data
+            map<int, bool> keys;
+            bool has_been_bound_already_for_this_frame = false;
+        // constructor
+            KeyMapperClass()
+                {
+                    // set all the keys (0-350) to be un-pressed by default
+                    for (int each : range(0,350))
+                        {
+                            keys[each] = false;
+                        }
+                }
+        // members
+        void keepTrackOfKeyPresses(int& action, int& key)
+                {
+                    // keydown
+                    if (action == GLFW_PRESS)
+                        {
+                            keys[key] = true;
+                        }
+                    // keyup
+                    else if (action == GLFW_RELEASE)
+                        {
+                            keys[key] = false;
+                        }
+                }
+            void bindKeysTo(vec3& rotation, vec3& translation)
+                {
+                    if (keys[GLFW_KEY_UP           ] == true) { rotation.x    += 0.05; }
+                    if (keys[GLFW_KEY_DOWN         ] == true) { rotation.x    -= 0.05; }
+                    if (keys[GLFW_KEY_LEFT         ] == true) { rotation.y    += 0.05; }
+                    if (keys[GLFW_KEY_RIGHT        ] == true) { rotation.y    -= 0.05; }
+                    if (keys[GLFW_KEY_LEFT_BRACKET ] == true) { rotation.z    += 0.05; }
+                    if (keys[GLFW_KEY_RIGHT_BRACKET] == true) { rotation.z    -= 0.05; }
+                    if (keys[GLFW_KEY_A            ] == true) { translation.x += 0.05; }
+                    if (keys[GLFW_KEY_D            ] == true) { translation.x -= 0.05; }
+                    if (keys[GLFW_KEY_E            ] == true) { translation.y += 0.05; }
+                    if (keys[GLFW_KEY_Z            ] == true) { translation.y -= 0.05; }
+                    if (keys[GLFW_KEY_W            ] == true) { translation.z += 0.05; }
+                    if (keys[GLFW_KEY_S            ] == true) { translation.z -= 0.05; }
+                    // keep track of if the keys already bound
+                    has_been_bound_already_for_this_frame = true;
+                }
+    };
+extern KeyMapperClass key_mapper;
+KeyMapperClass key_mapper;
+
+// struct Cubeiod
+//     {
+//         MatrixStack& MV;
+//         Cubeiod(MatrixStack& the_matrix_stack) : MV(the_matrix_stack)
+//             {
+//                 MV.push
+//             }
+//     };
+
+// struct Cubeoid
+//     {
+//         mat4 transforms_for_cube;
+//         // keep track of all the vertexes;
+//         vec3 front_top_right_point     ( 1, 1, 1);
+//         vec3 front_bottom_right_point  ( 1,-1, 1);
+//         vec3 front_bottom_left_point   (-1,-1, 1);
+//         vec3 front_top_left_point      (-1, 1, 1);
+//         vec3 back_top_right_point      ( 1, 1,-1);
+//         vec3 back_bottom_right_point   ( 1,-1,-1);
+//         vec3 back_bottom_left_point    (-1,-1,-1);
+//         vec3 back_top_left_point       (-1, 1,-1);
+        
+//         void transform(mat4 transformation)
+//             {
+//                 transforms_for_cube *= transformation;
+//             }
+        
+//         // create 6 points for cubeoid
+//         // all operations get done to all 6 points
+//         // have a "rotate about" function
+//         void rotateAbout(vec3 point, vec3 angles)
+//             {
+                
+//             }
+//     };
+
+
 #define drawTheLetterA                                                                  \
     {                                                                                   \
+        vec3 rotation_offset(0, -0.05, 0.95);                                           \
+        vec3 translation_offset(0, 0, 0.0999987);                                       \
         MV.pushMatrix();                                                                \
-        /* squish it */                                                                 \
-        if (keys[GLFW_KEY_LEFT_BRACKET ] == true) { rotation.z += 0.1; }                \
-        if (keys[GLFW_KEY_RIGHT_BRACKET] == true) { rotation.z -= 0.1; }                \
-        MV.rotate(rotation.z, vec3(0,0,1));                                             \
-        MV.scale(vec3(1, 0.2, 1));                                                      \
                                                                                         \
+        /* rotate it first */                                                           \
+        MV.rotate(global_rotation.x + rotation_offset.x, vec3(1,0,0));                  \
+        MV.rotate(global_rotation.y + rotation_offset.y, vec3(0,1,0));                  \
+        MV.rotate(global_rotation.z + rotation_offset.z, vec3(0,0,1));                  \
+        /* squish it */                                                                 \
+        MV.scale(vec3(1, 0.2, 1));                                                      \
+        /* translate it */                                                              \
+        vec3 new_translation = global_translation + translation_offset;                 \
+        MV.translate(new_translation);                                                  \
+        /* draw it */                                                                   \
         glUniformMatrix4fv(unifIDs["MV"], 1, GL_FALSE, value_ptr(MV.topMatrix()));      \
         glDrawArrays(GL_TRIANGLES, 0, indCount);                                        \
         MV.popMatrix();                                                                 \

@@ -46,9 +46,8 @@ MatrixStack MV;
     map<string, GLint>  unifIDs;
     map<string, GLuint> bufIDs;
     int                 indCount;
-    map<int, bool>      keys;
-    vec3 rotation;
-    vec3 translation(0,0,-2.5);
+    vec3 global_rotation;
+    vec3 global_translation(0,0,-2.5);
 
 // 
 // 
@@ -64,15 +63,9 @@ MatrixStack MV;
     // This function is called when a key is pressed
     static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
         {
-            cout << "action = " << action << ", key = " << key << "\n"; 
-            if (action == GLFW_PRESS)
-                {
-                    keys[key] = true;
-                }
-            else if (action == GLFW_RELEASE)
-                {
-                    keys[key] = false;
-                }
+            cout << "action = " << action << ", key = " << key << ", x = " << global_rotation.x << ", y = " << global_rotation.y << ", z = " << global_rotation.z << ", x = " << global_translation.x << ", y = " << global_translation.y << ", z = " << global_translation.z << "\n"; 
+            key_mapper.keepTrackOfKeyPresses(action, key);
+            // close on escape
             if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
                 {
                     glfwSetWindowShouldClose(window, GL_TRUE);
@@ -94,13 +87,6 @@ MatrixStack MV;
     // This function is called once to initialize the scene and OpenGL
     static void init()
         {
-            // 
-            // initially no keys are pressed
-            // 
-                for (int each : range(0,350))
-                    {
-                        keys[each] = false;
-                    }
             //
             // General setup
             //
@@ -284,22 +270,27 @@ MatrixStack MV;
             //
             // DO STUFF HERE
             //
-            // make the original matrix invisible
+            
+            // make the obj visible
             MV.translate(vec3(0,0,-2));
             
-            // move when keys are pressed down
-            if (keys[GLFW_KEY_LEFT ] == true) { rotation.y    += 0.1; }
-            if (keys[GLFW_KEY_RIGHT] == true) { rotation.y    -= 0.1; }
-            if (keys[GLFW_KEY_W    ] == true) { translation.z += 0.1; }
-            if (keys[GLFW_KEY_S    ] == true) { translation.z -= 0.1; }
+            key_mapper.has_been_bound_already_for_this_frame = false;
+            
+            
+            
+            // move the global object if  when keys are pressed down 
+            if (not key_mapper.has_been_bound_already_for_this_frame)
+                {
+                    key_mapper.bindKeysTo(global_rotation, global_translation);
+                }
             
             // 
-            // use persistance variables for the translation and rotation amounts
+            // use persistance variables for the global_translation and global_rotation amounts
             // 
-            MV.translate(translation);
-            MV.rotate(rotation.x, vec3(1,0,0));
-            MV.rotate(rotation.y, vec3(0,1,0));
-            MV.rotate(rotation.z, vec3(0,0,1));
+            MV.translate(global_translation);
+            MV.rotate(global_rotation.x, vec3(1,0,0));
+            MV.rotate(global_rotation.y, vec3(0,1,0));
+            MV.rotate(global_rotation.z, vec3(0,0,1));
             
             
             
