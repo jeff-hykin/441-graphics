@@ -108,3 +108,21 @@ mat4 createTranslationMatrix(vec3 const& translation)
         return translate(output.to_m, translation);
     }
     
+
+#define drawTheLetterA                                                                  \
+    {                                                                                   \
+        MV.pushMatrix();                                                                \
+        /* squish it */                                                                 \
+        if (keys[GLFW_KEY_LEFT_BRACKET ] == true) { rotation.z += 0.1; }                \
+        if (keys[GLFW_KEY_RIGHT_BRACKET] == true) { rotation.z -= 0.1; }                \
+        MV.rotate(rotation.z, vec3(0,0,1));                                             \
+        MV.scale(vec3(1, 0.2, 1));                                                      \
+                                                                                        \
+        glUniformMatrix4fv(unifIDs["MV"], 1, GL_FALSE, value_ptr(MV.topMatrix()));      \
+        glDrawArrays(GL_TRIANGLES, 0, indCount);                                        \
+        MV.popMatrix();                                                                 \
+    }                                                                                   \
+
+
+
+
