@@ -89,9 +89,7 @@ struct Matrix
 
 
 
-
-
-// output
+// add output method for matricies
 template <int ROWS, int COLUMNS>
 ostream& operator<<(ostream& output_stream, mat<ROWS, COLUMNS, DEFAULT_MATRIX_VALUE> input)
     {
@@ -99,24 +97,6 @@ ostream& operator<<(ostream& output_stream, mat<ROWS, COLUMNS, DEFAULT_MATRIX_VA
         helper.to_m = input;
         output_stream << helper;
         return output_stream;
-    }
-
-template <int SIZE>
-mat<SIZE, SIZE, DEFAULT_MATRIX_VALUE> createIdentityMatrix()
-    {
-        Matrix<SIZE, SIZE> output;
-        for (int each : range(SIZE))
-            {
-                output[each][each] = 1;
-            }
-        return output.to_m;
-    }
-
-mat4 createTranslationMatrix(vec3 const& translation)
-    {
-        Matrix<4,4> output;
-        output.to_m = createIdentityMatrix<4>();
-        return translate(output.to_m, translation);
     }
     
 
