@@ -276,25 +276,50 @@ struct Cubeiod
 // summary:
 //     this is a wrapper to make the code cleaner and more safe
 //     if you don't care about safety and only want speed: then add #define NO_RUNTIME_CHECKS before including this file
-struct VertexShaderClass
+struct VertexShader
     {
         // data
-            GLuint* progID;
+            GLuint id;
+            string name;
+            vector<GLuint> attached_programs;
             map<string, GLint> attribute_location_ids;
             // conditially add safety checks
             #ifndef NO_RUNTIME_CHECKS
                 map<string, bool> data_has_been_sent_for;
             #endif
-        
         // member functions
-            void init(GLuint& program_id)
+            void loadFromFile(string location_of_shader_file)
                 {
-                    progID = &program_id;
+                    name = location_of_shader_file;
+                    // create the shader
+                    id = glCreateShader(GL_VERTEX_SHADER);
+                    // get shader from file
+                    const char* vShaderText = GLSL::textFileRead(name.c_str());
+                    glShaderSource(id, 1, &vShaderText, NULL);
+                    // Compile the shader
+                    int rc;
+                    glCompileShader(id);
+                    glGetShaderiv(id, GL_COMPILE_STATUS, &rc);
+                    if(!rc)
+                        {
+                            GLSL::printShaderInfoLog(id);
+                            cerr << "Error compiling vertex shader " << name << endl;
+                            exit(0);
+                        }
+                }
+            void attachTo(GLuint program_id)
+                {
+                    // attach the shader to the program
+                    glAttachShader(program_id, id);
+                    attached_programs.push_back(program_id);
                 }
             // call this inside init
             void addAttribute(string attribute_name)
                 {
-                    attribute_location_ids[attribute_name]  = glGetUniformLocation(*progID, attribute_name.c_str());
+                    for (auto each_program : attached_programs)
+                        {
+                            attribute_location_ids[attribute_name]  = glGetUniformLocation(each_program, attribute_name.c_str());
+                        }
                 }
             // at the top of render
             void onRenderStart()
@@ -345,6 +370,4 @@ struct VertexShaderClass
                         }
                 }
     };
-extern VertexShaderClass vertex_shader; // declare
-VertexShaderClass vertex_shader; // init
 

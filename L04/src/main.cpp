@@ -45,6 +45,7 @@ MatrixStack MV;
     map<string, GLint>  attrIDs;
     map<string, GLint>  unifIDs;
     map<string, GLuint> bufIDs;
+    VertexShader        vertex_shader;
     int                 indCount;
     vec3 global_rotation;
     vec3 global_translation(0,0,-2.5);
@@ -102,31 +103,19 @@ MatrixStack MV;
             //
             // GLSL program setup
             //
+                // Create the vertex shader
+                vertex_shader.loadFromFile(RESOURCE_DIR + "vert.glsl");
 
                 // Create shader handles
-                GLuint vShaderID = glCreateShader(GL_VERTEX_SHADER);
                 GLuint fShaderID = glCreateShader(GL_FRAGMENT_SHADER);
 
                 // Read shader sources
-                string      vShaderName = RESOURCE_DIR + "vert.glsl";
                 string      fShaderName = RESOURCE_DIR + "frag.glsl";
-                const char* vShaderText = GLSL::textFileRead(vShaderName.c_str());
                 const char* fShaderText = GLSL::textFileRead(fShaderName.c_str());
-                glShaderSource(vShaderID, 1, &vShaderText, NULL);
                 glShaderSource(fShaderID, 1, &fShaderText, NULL);
 
-                // Compile vertex shader
-                int rc;
-                glCompileShader(vShaderID);
-                glGetShaderiv(vShaderID, GL_COMPILE_STATUS, &rc);
-                if(!rc)
-                    {
-                        GLSL::printShaderInfoLog(vShaderID);
-                        cout << "Error compiling vertex shader " << vShaderName << endl;
-                        return;
-                    }
-
                 // Compile fragment shader
+                int rc;
                 glCompileShader(fShaderID);
                 glGetShaderiv(fShaderID, GL_COMPILE_STATUS, &rc);
                 if(!rc)
@@ -136,20 +125,21 @@ MatrixStack MV;
                         return;
                     }
 
-                // Create the program and link
+                // Create the program and link the shaders
                 progID = glCreateProgram();
-                glAttachShader(progID, vShaderID);
+                // initilize the vertex shader
+                vertex_shader.attachTo(progID);
+            
                 glAttachShader(progID, fShaderID);
                 glLinkProgram(progID);
                 glGetProgramiv(progID, GL_LINK_STATUS, &rc);
                 if(!rc)
                     {
                         GLSL::printProgramInfoLog(progID);
-                        cout << "Error linking shaders " << vShaderName << " and " << fShaderName << endl;
+                        cout << "Error linking shaders " << vertex_shader.name << " and " << fShaderName << endl;
                         return;
                     }
-                // initilize the vertex shader
-                vertex_shader.init(progID);
+                
                 
                 // Get vertex attribute IDs
                 attrIDs["aPos"] = glGetAttribLocation(progID, "aPos");
@@ -282,10 +272,12 @@ MatrixStack MV;
             
             
             // move the global object if  when keys are pressed down 
-            if (not key_mapper.has_been_bound_already_for_this_frame)
-                {
-                    MV.topMatrix() *= key_mapper.transformFromKeyPresses(MV.topMatrix());
-                }
+            // if (not key_mapper.has_been_bound_already_for_this_frame)
+            //     {
+            //         MV.topMatrix() *= key_mapper.transformFromKeyPresses(MV.topMatrix());
+            //     }
+            
+            
             
             drawTheLetterA 
             
