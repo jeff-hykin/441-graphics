@@ -165,18 +165,56 @@ struct KeyMapperClass
                     // keep track of if the keys already bound
                     has_been_bound_already_for_this_frame = true;
                 }
+            // apply incremental changes to a matrix
+            mat4 transformFromKeyPresses(mat4 a_matrix)
+                {
+                    vec3 rotation;
+                    vec3 translation;
+                    if (keys[GLFW_KEY_UP           ] == true) { rotation.x    += 0.05; }
+                    if (keys[GLFW_KEY_DOWN         ] == true) { rotation.x    -= 0.05; }
+                    if (keys[GLFW_KEY_LEFT         ] == true) { rotation.y    += 0.05; }
+                    if (keys[GLFW_KEY_RIGHT        ] == true) { rotation.y    -= 0.05; }
+                    if (keys[GLFW_KEY_LEFT_BRACKET ] == true) { rotation.z    += 0.05; }
+                    if (keys[GLFW_KEY_RIGHT_BRACKET] == true) { rotation.z    -= 0.05; }
+                    if (keys[GLFW_KEY_A            ] == true) { translation.x += 0.05; }
+                    if (keys[GLFW_KEY_D            ] == true) { translation.x -= 0.05; }
+                    if (keys[GLFW_KEY_E            ] == true) { translation.y += 0.05; }
+                    if (keys[GLFW_KEY_Z            ] == true) { translation.y -= 0.05; }
+                    if (keys[GLFW_KEY_W            ] == true) { translation.z += 0.05; }
+                    if (keys[GLFW_KEY_S            ] == true) { translation.z -= 0.05; }
+                    
+                    // apply translation
+                    a_matrix *= translate(mat4(1.0f), translation);
+                    // apply rotation
+                    a_matrix *= rotate(mat4(1.0f), rotation.x, vec3(1,0,0));
+                    a_matrix *= rotate(mat4(1.0f), rotation.y, vec3(0,1,0));
+                    a_matrix *= rotate(mat4(1.0f), rotation.z, vec3(0,0,1));
+                    
+                    // keep track of if the keys already bound
+                    has_been_bound_already_for_this_frame = true;
+                    
+                    // return the transformation matrix
+                    return a_matrix;
+                }
     };
-extern KeyMapperClass key_mapper;
-KeyMapperClass key_mapper;
+extern KeyMapperClass key_mapper; // declare
+KeyMapperClass key_mapper; // init
 
-// struct Cubeiod
-//     {
-//         MatrixStack& MV;
-//         Cubeiod(MatrixStack& the_matrix_stack) : MV(the_matrix_stack)
-//             {
-//                 MV.push
-//             }
-//     };
+struct Cubeiod
+    {
+        // data 
+            MatrixStack& MV;
+            mat4 transforms; // persistant memory of the transformations
+        // constuctors
+            Cubeiod(MatrixStack& the_matrix_stack) : MV(the_matrix_stack)
+                {
+                    MV.pushMatrix();
+                }
+            ~Cubeiod()
+                {
+                    MV.popMatrix();
+                }
+    };
 
 // struct Cubeoid
 //     {
@@ -229,4 +267,84 @@ KeyMapperClass key_mapper;
 
 
 
+
+
+
+// 
+// to add a variable to the shader shader variable
+//
+// summary:
+//     this is a wrapper to make the code cleaner and more safe
+//     if you don't care about safety and only want speed: then add #define NO_RUNTIME_CHECKS before including this file
+struct VertexShaderClass
+    {
+        // data
+            GLuint* progID;
+            map<string, GLint> attribute_location_ids;
+            // conditially add safety checks
+            #ifndef NO_RUNTIME_CHECKS
+                map<string, bool> data_has_been_sent_for;
+            #endif
+        
+        // member functions
+            void init(GLuint& program_id)
+                {
+                    progID = &program_id;
+                }
+            // call this inside init
+            void addAttribute(string attribute_name)
+                {
+                    attribute_location_ids[attribute_name]  = glGetUniformLocation(*progID, attribute_name.c_str());
+                }
+            // at the top of render
+            void onRenderStart()
+                {
+                    // for each attribute, enable it
+                    for (auto& key_value_pair : attribute_location_ids) 
+                        {
+                            glEnableVertexAttribArray(key_value_pair.second);
+                            
+                            // conditionally run safety checks
+                            #ifndef NO_RUNTIME_CHECKS
+                                data_has_been_sent_for[key_value_pair.first] = false;
+                            #endif
+                        }
+                }
+            // in the middle of render
+            template <class ANYTYPE> 
+            void sendData(string attribute_name, ANYTYPE& data)
+                {
+                    // conditionally run safety checks
+                    #ifndef NO_RUNTIME_CHECKS
+                        if (data_has_been_sent_for[attribute_name] == true)
+                            {
+                                cerr << "Durning render, there was an vertex shader attribute: " << attribute_name << " that was sent data twice\nmeaning vertex_shader.sendData() was probably called twice on it. (To fix this make sure it is only called once)\n";
+                                exit(0);
+                            }
+                        data_has_been_sent_for[attribute_name] = true;
+                    #endif
+                    // send the data to the GPU
+                    glVertexAttribPointer(attribute_location_ids[attribute_name], sizeof(data)/sizeof(GL_FLOAT), GL_FLOAT, false, 0, &data);
+                }
+            // at the end of render
+            void onRenderEnd()
+                {
+                    // for each attribute, disable it
+                    for (auto& key_value_pair : attribute_location_ids) 
+                        {
+                            glDisableVertexAttribArray(key_value_pair.second);
+                            
+                            // conditionally run safety checks
+                            #ifndef NO_RUNTIME_CHECKS
+                                if (data_has_been_sent_for[key_value_pair.first] == false)
+                                    {
+                                        cerr << "Durning render, there was an vertex shader attribute: " << key_value_pair.first << " that didnt get any data\nmeaning vertex_shader.sendData() was probably never called. (To fix this make sure it is called once)\n";
+                                        exit(0);
+                                    }
+                            #endif
+                        }
+                }
+    };
+extern VertexShaderClass vertex_shader; // declare
+VertexShaderClass vertex_shader; // init
 

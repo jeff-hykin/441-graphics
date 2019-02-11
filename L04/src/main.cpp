@@ -148,7 +148,9 @@ MatrixStack MV;
                         cout << "Error linking shaders " << vShaderName << " and " << fShaderName << endl;
                         return;
                     }
-
+                // initilize the vertex shader
+                vertex_shader.init(progID);
+                
                 // Get vertex attribute IDs
                 attrIDs["aPos"] = glGetAttribLocation(progID, "aPos");
                 attrIDs["aNor"] = glGetAttribLocation(progID, "aNor");
@@ -265,34 +267,25 @@ MatrixStack MV;
                 glBindBuffer(GL_ARRAY_BUFFER, bufIDs["bNor"]);
                 // Set the pointer -- the data is already on the GPU
                 glVertexAttribPointer(attrIDs["aNor"], 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
+                // setup the shader
+                vertex_shader.onRenderStart();
+                
                 MV.pushMatrix();
+                // reset the keybinding each frame
+                key_mapper.has_been_bound_already_for_this_frame = false;
             //
             // DO STUFF HERE
             //
             
-            // make the obj visible
-            MV.translate(vec3(0,0,-2));
             
-            key_mapper.has_been_bound_already_for_this_frame = false;
             
             
             
             // move the global object if  when keys are pressed down 
             if (not key_mapper.has_been_bound_already_for_this_frame)
                 {
-                    key_mapper.bindKeysTo(global_rotation, global_translation);
+                    MV.topMatrix() *= key_mapper.transformFromKeyPresses(MV.topMatrix());
                 }
-            
-            // 
-            // use persistance variables for the global_translation and global_rotation amounts
-            // 
-            MV.translate(global_translation);
-            MV.rotate(global_rotation.x, vec3(1,0,0));
-            MV.rotate(global_rotation.y, vec3(0,1,0));
-            MV.rotate(global_rotation.z, vec3(0,0,1));
-            
-            
             
             drawTheLetterA 
             
@@ -307,6 +300,8 @@ MatrixStack MV;
                 glDisableVertexAttribArray(attrIDs["aNor"]);
                 // Disable the attribute
                 glDisableVertexAttribArray(attrIDs["aPos"]);
+                // close the shader bindings
+                vertex_shader.onRenderEnd();
                 // Unbind our GLSL program
                 glUseProgram(0);
 
