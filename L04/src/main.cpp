@@ -104,13 +104,12 @@ MatrixStack MV;
             //
             // GLSL program setup
             //
+                // Create the program
+                progID = glCreateProgram();
                 // load the shaders
                 vertex_shader.loadFromFile(RESOURCE_DIR + "vert.glsl");
                 fragment_shader.loadFromFile(RESOURCE_DIR + "frag.glsl");
-
-                // Create the program and link the shaders
-                progID = glCreateProgram();
-                // initilize the vertex shader
+                // attach shaders
                 vertex_shader.attachTo(progID);
                 fragment_shader.attachTo(progID);
                 int rc;
@@ -254,10 +253,10 @@ MatrixStack MV;
             
             
             // move the global object if  when keys are pressed down 
-            // if (not key_mapper.has_been_bound_already_for_this_frame)
-            //     {
-            //         MV.topMatrix() *= key_mapper.transformFromKeyPresses(MV.topMatrix());
-            //     }
+            if (not key_mapper.has_been_bound_already_for_this_frame)
+                {
+                    MV.multMatrix(key_mapper.transformFromKeyPresses(MV.topMatrix()));
+                }
             
             
             

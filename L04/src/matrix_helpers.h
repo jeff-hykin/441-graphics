@@ -166,7 +166,7 @@ struct KeyMapperClass
                     has_been_bound_already_for_this_frame = true;
                 }
             // apply incremental changes to a matrix
-            mat4 transformFromKeyPresses(mat4 a_matrix)
+            mat4 transformFromKeyPresses(const mat4& a_matrix)
                 {
                     vec3 rotation;
                     vec3 translation;
@@ -183,18 +183,19 @@ struct KeyMapperClass
                     if (keys[GLFW_KEY_W            ] == true) { translation.z += 0.05; }
                     if (keys[GLFW_KEY_S            ] == true) { translation.z -= 0.05; }
                     
+                    mat4 copy_of_matrix = a_matrix;
                     // apply translation
-                    a_matrix *= translate(mat4(1.0f), translation);
+                    copy_of_matrix *= translate(mat4(1.0f), translation);
                     // apply rotation
-                    a_matrix *= rotate(mat4(1.0f), rotation.x, vec3(1,0,0));
-                    a_matrix *= rotate(mat4(1.0f), rotation.y, vec3(0,1,0));
-                    a_matrix *= rotate(mat4(1.0f), rotation.z, vec3(0,0,1));
+                    copy_of_matrix *= rotate(mat4(1.0f), rotation.x, vec3(1,0,0));
+                    copy_of_matrix *= rotate(mat4(1.0f), rotation.y, vec3(0,1,0));
+                    copy_of_matrix *= rotate(mat4(1.0f), rotation.z, vec3(0,0,1));
                     
                     // keep track of if the keys already bound
                     has_been_bound_already_for_this_frame = true;
                     
                     // return the transformation matrix
-                    return a_matrix;
+                    return copy_of_matrix;
                 }
     };
 extern KeyMapperClass key_mapper; // declare
