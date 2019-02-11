@@ -49,7 +49,7 @@ MatrixStack MV;
     FragmentShader      fragment_shader;
     int                 indCount;
     vec3 global_rotation;
-    vec3 global_translation(0,0,-2.5);
+    vec3 global_translation(0,0,0);
 
 // 
 // 
