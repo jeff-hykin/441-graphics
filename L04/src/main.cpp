@@ -217,10 +217,10 @@ using namespace glm;
             //
                 auto a_cube = Cubeoid({
                     MV.translate(0,0,-2.5);
-                    if (not key_mapper.has_been_bound_already_for_this_frame)
-                        {
-                            MV.multMatrix(key_mapper.transformFromKeyPresses(MV.topMatrix()));
-                        }
+                    // if (not key_mapper.has_been_bound_already_for_this_frame)
+                    //     {
+                    //         MV.multMatrix(key_mapper.transformFromKeyPresses(MV.topMatrix()));
+                    //     }
                     draw(MV.topMatrix());
                 });
                 render_manager.add(vertex_shader);
