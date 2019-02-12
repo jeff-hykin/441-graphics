@@ -1,6 +1,7 @@
 #include <fcntl.h>               // functional progamming
 #include <type_traits>           // functional progamming
 #include <utility>               // functional progamming
+#include <functional>            // functional progamming
 #include <memory>
 #include <algorithm>
 #include <tuple>
@@ -101,7 +102,25 @@ ostream& operator<<(ostream& output_stream, mat<ROWS, COLUMNS, DEFAULT_MATRIX_VA
         output_stream << helper;
         return output_stream;
     }
-    
+
+
+struct Window
+    {
+        GLFWwindow* glfw_window;
+        void init(int width=640, int height=480, string name="", GLFWmonitor* monitor_ptr=NULL, GLFWwindow* window_ptr=NULL)
+            {
+                glfw_window = glfwCreateWindow(width, height, name.c_str(), monitor_ptr, window_ptr);
+                if(!glfw_window)
+                    {
+                        glfwTerminate();
+                        exit(0);
+                    }
+                // Make the window's context current.
+                glfwMakeContextCurrent(glfw_window);
+            }
+    };
+extern Window window;
+Window window;
 
 struct KeyMapperClass
     {
@@ -190,24 +209,24 @@ struct Renderable
     {
         static void renderStart();
         Renderable() {};
-        void onRenderStart() {};
-        void render() {};
-        void onRenderEnd() {};
+        virtual void onRenderStart() {};
+        virtual void render() {};
+        virtual void onRenderEnd() {};
     };
 
 struct RenderManager
     {
-        vector<Renderable> renderables;
-        void add(Renderable& a_renderable)
+        vector<shared_ptr<Renderable>> renderables;
+        void add(shared_ptr<Renderable> a_renderable_ptr)
             {
-                renderables.push_back(a_renderable);
+                renderables.push_back(a_renderable_ptr);
             }
         void renderStart()
             {
                 // run all the render start functions
                 for (auto& each : renderables)
                     {
-                        each.onRenderStart();
+                        each->onRenderStart();
                     }
             }
         void renderMain()
@@ -215,33 +234,35 @@ struct RenderManager
                 // run all the render functions
                 for (auto& each : renderables)
                     {
-                        each.render();
+                        each->render();
                     }
             }
         void renderEnd()
             {
                 // run all the render end functions in reverse order
-                for(vector<Renderable>::reverse_iterator iterator_index = renderables.rbegin(); iterator_index != renderables.rend(); ++iterator_index)
+                for(vector<shared_ptr<Renderable>>::reverse_iterator iterator_index = renderables.rbegin(); iterator_index != renderables.rend(); ++iterator_index)
                     {
-                        iterator_index->onRenderEnd();
+                        (*iterator_index)->onRenderEnd();
                     }
             }
     };
 
+extern MatrixStack MV;
+MatrixStack MV;
+
 struct Cubeiod : public Renderable
     {
         // data 
-            MatrixStack& MV;
             mat4 transforms; // persistant memory of the transformations
             function<void(void)> on_render;
             vector<Cubeiod> children;
         // constuctors
-            Cubeiod(MatrixStack& the_matrix_stack, function<void(void)> input_on_render) : MV(the_matrix_stack) 
+            Cubeiod(function<void(void)> input_on_render)
                 {
                     on_render = input_on_render;
                 }
         // methods
-            void render()
+            void render() override
                 {
                     MV.pushMatrix();
                     // run the render function
@@ -254,6 +275,8 @@ struct Cubeiod : public Renderable
                     MV.popMatrix();
                 }
     };
+    // create a helper for making cubeoids
+    #define Cubeoid(FUNC) shared_ptr<Cubeiod>(new Cubeiod([&]() FUNC ))
 
 
 #define drawTheLetterA                                                                  \
@@ -272,8 +295,7 @@ struct Cubeiod : public Renderable
         vec3 new_translation = global_translation + translation_offset;                 \
         MV.translate(new_translation);                                                  \
         /* draw it */                                                                   \
-        glUniformMatrix4fv(unifIDs["MV"], 1, GL_FALSE, value_ptr(MV.topMatrix()));      \
-        glDrawArrays(GL_TRIANGLES, 0, indCount);                                        \
+        draw(MV.topMatrix());                                                            \
         MV.popMatrix();                                                                 \
     }                                                                                   \
 

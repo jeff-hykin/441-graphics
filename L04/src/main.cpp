@@ -30,15 +30,14 @@
 using namespace std;
 using namespace glm;
 
-// Modelview matrix: camera and world
-MatrixStack MV;
+
+
 
 
 // 
 // init
 // 
 
-    GLFWwindow* window;              // Main application window
     string      RESOURCE_DIR = "./"; // Where the resources are loaded from
 
     GLuint              progID;
@@ -46,11 +45,20 @@ MatrixStack MV;
     map<string, GLint>  unifIDs;
     map<string, GLuint> bufIDs;
     int                 indCount;
-    VertexShader        vertex_shader;
+    auto                vertex_shader = shared_ptr<VertexShader>(new VertexShader());
     FragmentShader      fragment_shader;
     RenderManager       render_manager;
     vec3 global_rotation;
     vec3 global_translation(0,0,0);
+
+// 
+// Helpers (that have to be in main)
+// 
+    void draw(mat4 a_matrix)
+        {
+            glUniformMatrix4fv(unifIDs["MV"], 1, GL_FALSE, value_ptr(a_matrix));
+            glDrawArrays(GL_TRIANGLES, 0, indCount);
+        }
 
 // 
 // 
@@ -108,10 +116,10 @@ MatrixStack MV;
                 // Create the program
                 progID = glCreateProgram();
                 // load the shaders
-                vertex_shader.loadFromFile(RESOURCE_DIR + "vert.glsl");
+                vertex_shader->loadFromFile(RESOURCE_DIR + "vert.glsl");
                 fragment_shader.loadFromFile(RESOURCE_DIR + "frag.glsl");
                 // attach shaders
-                vertex_shader.attachTo(progID);
+                vertex_shader->attachTo(progID);
                 fragment_shader.attachTo(progID);
                 int rc;
                 glLinkProgram(progID);
@@ -119,7 +127,7 @@ MatrixStack MV;
                 if(!rc)
                     {
                         GLSL::printProgramInfoLog(progID);
-                        cout << "Error linking shaders " << vertex_shader.file_location << " and " << fragment_shader.file_location << endl;
+                        cout << "Error linking shaders " << vertex_shader->file_location << " and " << fragment_shader.file_location << endl;
                         return;
                     }
                 
@@ -207,7 +215,16 @@ MatrixStack MV;
             // 
             // Attach renderables
             //
+                auto a_cube = Cubeoid({
+                    MV.translate(0,0,-2.5);
+                    if (not key_mapper.has_been_bound_already_for_this_frame)
+                        {
+                            MV.multMatrix(key_mapper.transformFromKeyPresses(MV.topMatrix()));
+                        }
+                    draw(MV.topMatrix());
+                });
                 render_manager.add(vertex_shader);
+                render_manager.add(a_cube);
         }
 
     // This function is called every frame to draw the scene.
@@ -221,7 +238,7 @@ MatrixStack MV;
 
                 // Get current frame buffer size.
                 int width, height;
-                glfwGetFramebufferSize(window, &width, &height);
+                glfwGetFramebufferSize(window.glfw_window, &width, &height);
                 float aspect = width / (float)height;
 
                 // Set up projection matrix (camera intrinsics)
@@ -252,20 +269,8 @@ MatrixStack MV;
             //
             // DO STUFF HERE
             //
-            
-            
-            
                 render_manager.renderMain();
             
-            // move the global object if  when keys are pressed down 
-            if (not key_mapper.has_been_bound_already_for_this_frame)
-                {
-                    MV.multMatrix(key_mapper.transformFromKeyPresses(MV.topMatrix()));
-                }
-            
-            
-            
-            drawTheLetterA 
             
             // 
             // END DO STUFF
@@ -309,14 +314,14 @@ int main(int argc, char** argv)
                 return -1;
             }
         // Create a windowed mode window and its OpenGL context.
-        window = glfwCreateWindow(640, 480, "YOUR NAME", NULL, NULL);
-        if(!window)
+        window.glfw_window = glfwCreateWindow(640, 480, "YOUR NAME", NULL, NULL);
+        if(!window.glfw_window)
             {
                 glfwTerminate();
                 return -1;
             }
         // Make the window's context current.
-        glfwMakeContextCurrent(window);
+        glfwMakeContextCurrent(window.glfw_window);
         // Initialize GLEW.
         glewExperimental = true;
         if(glewInit() != GLEW_OK)
@@ -331,25 +336,25 @@ int main(int argc, char** argv)
         // Set vsync.
         glfwSwapInterval(1);
         // Set keyboard callback.
-        glfwSetKeyCallback(window, key_callback);
+        glfwSetKeyCallback(window.glfw_window, key_callback);
         // Set the mouse call back.
-        glfwSetMouseButtonCallback(window, mouse_callback);
+        glfwSetMouseButtonCallback(window.glfw_window, mouse_callback);
         // Set the window resize call back.
-        glfwSetFramebufferSizeCallback(window, resize_callback);
+        glfwSetFramebufferSizeCallback(window.glfw_window, resize_callback);
         // Initialize scene.
         init();
         // Loop until the user closes the window.
-        while(!glfwWindowShouldClose(window))
+        while(!glfwWindowShouldClose(window.glfw_window))
             {
                 // Render scene.
                 render();
                 // Swap front and back buffers.
-                glfwSwapBuffers(window);
+                glfwSwapBuffers(window.glfw_window);
                 // Poll for and process events.
                 glfwPollEvents();
             }
         // Quit program.
-        glfwDestroyWindow(window);
+        glfwDestroyWindow(window.glfw_window);
         glfwTerminate();
         return 0;
     }
