@@ -106,18 +106,26 @@ ostream& operator<<(ostream& output_stream, mat<ROWS, COLUMNS, DEFAULT_MATRIX_VA
 
 struct Window
     {
-        GLFWwindow* glfw_window;
-        void init(int width=640, int height=480, string name="", GLFWmonitor* monitor_ptr=NULL, GLFWwindow* window_ptr=NULL)
-            {
-                glfw_window = glfwCreateWindow(width, height, name.c_str(), monitor_ptr, window_ptr);
-                if(!glfw_window)
-                    {
-                        glfwTerminate();
-                        exit(0);
-                    }
-                // Make the window's context current.
-                glfwMakeContextCurrent(glfw_window);
-            }
+        // data
+            GLFWwindow* glfw_window;
+            GLuint              progID;
+            map<string, GLint>  attrIDs;
+            map<string, GLint>  unifIDs;
+            map<string, GLuint> bufIDs;
+            int                 indCount;
+            MatrixStack MV;
+        // methods
+            void init(int width=640, int height=480, string name="", GLFWmonitor* monitor_ptr=NULL, GLFWwindow* window_ptr=NULL)
+                {
+                    glfw_window = glfwCreateWindow(width, height, name.c_str(), monitor_ptr, window_ptr);
+                    if(!glfw_window)
+                        {
+                            glfwTerminate();
+                            exit(0);
+                        }
+                    // Make the window's context current.
+                    glfwMakeContextCurrent(glfw_window);
+                }
     };
 extern Window window;
 Window window;
@@ -247,9 +255,6 @@ struct RenderManager
             }
     };
 
-extern MatrixStack MV;
-MatrixStack MV;
-
 struct Cubeiod : public Renderable
     {
         // data 
@@ -264,7 +269,7 @@ struct Cubeiod : public Renderable
         // methods
             void render() override
                 {
-                    MV.pushMatrix();
+                    window.MV.pushMatrix();
                     // run the render function
                     on_render();
                     // run the render function of each of the children
@@ -272,32 +277,32 @@ struct Cubeiod : public Renderable
                         {
                             each.render();
                         }
-                    MV.popMatrix();
+                    window.MV.popMatrix();
                 }
     };
     // create a helper for making cubeoids
     #define Cubeoid(FUNC) shared_ptr<Cubeiod>(new Cubeiod([&]() FUNC ))
 
 
-#define drawTheLetterA                                                                  \
-    {                                                                                   \
-        vec3 rotation_offset(0, -0.05, 0.95);                                           \
-        vec3 translation_offset(0, 0, 0.0999987);                                       \
-        MV.pushMatrix();                                                                \
-                                                                                        \
-        /* rotate it first */                                                           \
-        MV.rotate(global_rotation.x + rotation_offset.x, vec3(1,0,0));                  \
-        MV.rotate(global_rotation.y + rotation_offset.y, vec3(0,1,0));                  \
-        MV.rotate(global_rotation.z + rotation_offset.z, vec3(0,0,1));                  \
-        /* squish it */                                                                 \
-        MV.scale(vec3(1, 0.2, 1));                                                      \
-        /* translate it */                                                              \
-        vec3 new_translation = global_translation + translation_offset;                 \
-        MV.translate(new_translation);                                                  \
-        /* draw it */                                                                   \
-        draw(MV.topMatrix());                                                            \
-        MV.popMatrix();                                                                 \
-    }                                                                                   \
+// #define drawTheLetterA                                                                  \
+//     {                                                                                   \
+//         vec3 rotation_offset(0, -0.05, 0.95);                                           \
+//         vec3 translation_offset(0, 0, 0.0999987);                                       \
+//         MV.pushMatrix();                                                                \
+//                                                                                         \
+//         /* rotate it first */                                                           \
+//         MV.rotate(global_rotation.x + rotation_offset.x, vec3(1,0,0));                  \
+//         MV.rotate(global_rotation.y + rotation_offset.y, vec3(0,1,0));                  \
+//         MV.rotate(global_rotation.z + rotation_offset.z, vec3(0,0,1));                  \
+//         /* squish it */                                                                 \
+//         MV.scale(vec3(1, 0.2, 1));                                                      \
+//         /* translate it */                                                              \
+//         vec3 new_translation = global_translation + translation_offset;                 \
+//         MV.translate(new_translation);                                                  \
+//         /* draw it */                                                                   \
+//         draw(MV.topMatrix());                                                            \
+//         MV.popMatrix();                                                                 \
+//     }                                                                                   \
 
 
 

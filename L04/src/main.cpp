@@ -31,20 +31,17 @@ using namespace std;
 using namespace glm;
 
 
-
-
+// TODO
+    // move globals into the matrix helpers
+    // create draw function in matrix helpers
+    // have Cubeoid combine persistant transformation with MV stack matrix
+    // have keymapper change the perisitant transformation matrix on the cubeiod
 
 // 
 // init
 // 
 
     string      RESOURCE_DIR = "./"; // Where the resources are loaded from
-
-    GLuint              progID;
-    map<string, GLint>  attrIDs;
-    map<string, GLint>  unifIDs;
-    map<string, GLuint> bufIDs;
-    int                 indCount;
     auto                vertex_shader = shared_ptr<VertexShader>(new VertexShader());
     FragmentShader      fragment_shader;
     RenderManager       render_manager;
@@ -56,8 +53,8 @@ using namespace glm;
 // 
     void draw(mat4 a_matrix)
         {
-            glUniformMatrix4fv(unifIDs["MV"], 1, GL_FALSE, value_ptr(a_matrix));
-            glDrawArrays(GL_TRIANGLES, 0, indCount);
+            glUniformMatrix4fv(window.unifIDs["MV"], 1, GL_FALSE, value_ptr(a_matrix));
+            glDrawArrays(GL_TRIANGLES, 0, window.indCount);
         }
 
 // 
@@ -114,30 +111,30 @@ using namespace glm;
             // GLSL program setup
             //
                 // Create the program
-                progID = glCreateProgram();
+                window.progID = glCreateProgram();
                 // load the shaders
                 vertex_shader->loadFromFile(RESOURCE_DIR + "vert.glsl");
                 fragment_shader.loadFromFile(RESOURCE_DIR + "frag.glsl");
                 // attach shaders
-                vertex_shader->attachTo(progID);
-                fragment_shader.attachTo(progID);
+                vertex_shader->attachTo(window.progID);
+                fragment_shader.attachTo(window.progID);
                 int rc;
-                glLinkProgram(progID);
-                glGetProgramiv(progID, GL_LINK_STATUS, &rc);
+                glLinkProgram(window.progID);
+                glGetProgramiv(window.progID, GL_LINK_STATUS, &rc);
                 if(!rc)
                     {
-                        GLSL::printProgramInfoLog(progID);
+                        GLSL::printProgramInfoLog(window.progID);
                         cout << "Error linking shaders " << vertex_shader->file_location << " and " << fragment_shader.file_location << endl;
                         return;
                     }
                 
                 // Get vertex attribute IDs
-                attrIDs["aPos"] = glGetAttribLocation(progID, "aPos");
-                attrIDs["aNor"] = glGetAttribLocation(progID, "aNor");
+                window.attrIDs["aPos"] = glGetAttribLocation(window.progID, "aPos");
+                window.attrIDs["aNor"] = glGetAttribLocation(window.progID, "aNor");
 
                 // Get uniform IDs
-                unifIDs["P"]  = glGetUniformLocation(progID, "P");
-                unifIDs["MV"] = glGetUniformLocation(progID, "MV");
+                window.unifIDs["P"]  = glGetUniformLocation(window.progID, "P");
+                window.unifIDs["MV"] = glGetUniformLocation(window.progID, "MV");
 
             //
             // Vertex buffer setup
@@ -193,18 +190,18 @@ using namespace glm;
                                     }
                             }
                     }
-                indCount = posBuf.size() / 3; // number of indices to be rendered
+                window.indCount = posBuf.size() / 3; // number of indices to be rendered
 
-                // Generate 2 buffer IDs and put them in the bufIDs map.
+                // Generate 2 buffer IDs and put them in the window.bufIDs map.
                 GLuint tmp[2];
                 glGenBuffers(2, tmp);
-                bufIDs["bPos"] = tmp[0];
-                bufIDs["bNor"] = tmp[1];
+                window.bufIDs["bPos"] = tmp[0];
+                window.bufIDs["bNor"] = tmp[1];
 
-                glBindBuffer(GL_ARRAY_BUFFER, bufIDs["bPos"]);
+                glBindBuffer(GL_ARRAY_BUFFER, window.bufIDs["bPos"]);
                 glBufferData(GL_ARRAY_BUFFER, posBuf.size() * sizeof(float), &posBuf[0], GL_STATIC_DRAW);
 
-                glBindBuffer(GL_ARRAY_BUFFER, bufIDs["bNor"]);
+                glBindBuffer(GL_ARRAY_BUFFER, window.bufIDs["bNor"]);
                 glBufferData(GL_ARRAY_BUFFER, norBuf.size() * sizeof(float), &norBuf[0], GL_STATIC_DRAW);
 
                 glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -216,12 +213,12 @@ using namespace glm;
             // Attach renderables
             //
                 auto a_cube = Cubeoid({
-                    MV.translate(0,0,-2.5);
+                    window.MV.translate(0,0,-2.5);
                     // if (not key_mapper.has_been_bound_already_for_this_frame)
                     //     {
                     //         MV.multMatrix(key_mapper.transformFromKeyPresses(MV.topMatrix()));
                     //     }
-                    draw(MV.topMatrix());
+                    draw(window.MV.topMatrix());
                 });
                 render_manager.add(vertex_shader);
                 render_manager.add(a_cube);
@@ -245,25 +242,25 @@ using namespace glm;
                 mat4 P = perspective((float)(45.0 * M_PI / 180.0), aspect, 0.01f, 100.0f);
 
                 // Tell OpenGL which GLSL program to use
-                glUseProgram(progID);
+                glUseProgram(window.progID);
                 // Pass in the current projection matrix
-                glUniformMatrix4fv(unifIDs["P"], 1, GL_FALSE, value_ptr(P));
+                glUniformMatrix4fv(window.unifIDs["P"], 1, GL_FALSE, value_ptr(P));
                 // Enable the attribute
-                glEnableVertexAttribArray(attrIDs["aPos"]);
+                glEnableVertexAttribArray(window.attrIDs["aPos"]);
                 // Enable the attribute
-                glEnableVertexAttribArray(attrIDs["aNor"]);
+                glEnableVertexAttribArray(window.attrIDs["aNor"]);
                 // Bind the position buffer object to make it the currently active buffer
-                glBindBuffer(GL_ARRAY_BUFFER, bufIDs["bPos"]);
+                glBindBuffer(GL_ARRAY_BUFFER, window.bufIDs["bPos"]);
                 // Set the pointer -- the data is already on the GPU
-                glVertexAttribPointer(attrIDs["aPos"], 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+                glVertexAttribPointer(window.attrIDs["aPos"], 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
                 // Bind the color buffer object to make it the currently active buffer
-                glBindBuffer(GL_ARRAY_BUFFER, bufIDs["bNor"]);
+                glBindBuffer(GL_ARRAY_BUFFER, window.bufIDs["bNor"]);
                 // Set the pointer -- the data is already on the GPU
-                glVertexAttribPointer(attrIDs["aNor"], 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+                glVertexAttribPointer(window.attrIDs["aNor"], 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
                 // setup the shader
                 render_manager.renderStart();
                 
-                MV.pushMatrix();
+                window.MV.pushMatrix();
                 // reset the keybinding each frame
                 key_mapper.has_been_bound_already_for_this_frame = false;
             //
@@ -275,14 +272,14 @@ using namespace glm;
             // 
             // END DO STUFF
             // 
-                MV.popMatrix();
+                window.MV.popMatrix();
 
                 // Unbind the buffer object
                 glBindBuffer(GL_ARRAY_BUFFER, 0);
                 // Disable the attribute
-                glDisableVertexAttribArray(attrIDs["aNor"]);
+                glDisableVertexAttribArray(window.attrIDs["aNor"]);
                 // Disable the attribute
-                glDisableVertexAttribArray(attrIDs["aPos"]);
+                glDisableVertexAttribArray(window.attrIDs["aPos"]);
                 // close the shader bindings
                 render_manager.renderEnd();
                 // Unbind our GLSL program
