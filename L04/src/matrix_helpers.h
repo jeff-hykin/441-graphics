@@ -135,18 +135,24 @@ struct Window
 extern Window window;
 Window window;
 
+
+
+// 
+// KeyMapperClass
+// 
+struct KeyCallBack 
+    {
+        int which_key = -1;
+        int which_action = -1;
+    };
+typedef KeyCallBack* KeyCallBackId;
 struct KeyMapperClass
     {
         // sub classes
-            struct KeyCallBack 
-                {
-                    int which_key = -1;
-                    int which_action = -1;
-                };
             struct Key
                 {
                     bool is_pressed = false;
-                    map<int, map<KeyCallBack*, function<void(void)>>> callbacks;
+                    map<int, map<KeyCallBackId, function<void(void)>>> callbacks;
                 };
         // data
             map<int, Key> keys;
@@ -166,10 +172,10 @@ struct KeyMapperClass
                     // TODO: delete all the callback identifiers
                 }
         // members
-            KeyCallBack* on(int key_code, int action, function<void(void)> a_function)
+            KeyCallBackId on(int key_code, int action, function<void(void)> a_function)
                 {
                     // create new KeyCallBack
-                    KeyCallBack* callback_identifier = new KeyCallBack();
+                    KeyCallBackId callback_identifier = new KeyCallBack();
                     callback_identifier->which_key = key_code;
                     callback_identifier->which_action = action;
                     // add the KeyCallBack to the callback map for that key
@@ -179,7 +185,7 @@ struct KeyMapperClass
                     // return the identifier encase the user wants to detach/delete it
                     return callback_identifier;
                 }
-            void deleteListener(KeyCallBack* callback_identifier)
+            void deleteListener(KeyCallBackId callback_identifier)
                 {
                     // un-bind the callback from the map of callbacks
                     auto& key = keys[callback_identifier->which_key];
