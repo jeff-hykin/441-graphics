@@ -32,10 +32,11 @@ using namespace glm;
 
 
 // TODO
-    // move globals into the matrix helpers
-    // create draw function in matrix helpers
+    // add a safety function to cubeoid when it tries to render something that doesnt have a on_render attached yet
+        // catch and rethrow errors with extra info when they happen in the render functions
     // have Cubeoid combine persistant transformation with MV stack matrix
-    // have keymapper change the perisitant transformation matrix on the cubeiod
+    // add the keybindings for , and .
+    // have callbacks for change the perisitant transformation matrix on the cubeiod
 
 // 
 // init
@@ -203,16 +204,31 @@ using namespace glm;
             // 
             // Attach renderables
             //
-                auto a_cube = Cubeoid({
+                shared_ptr<Cubeiod> left_arm, left_forarm, right_arm, right_forarm;
+                // heirachy for robot
+                auto chest_cube = newCubeoid(
+                    left_arm = newCubeoid(
+                        // left_forarm = newCubeoid()
+                    )
+                    // ,
+                    // right_arm = newCubeoid(
+                    //     // right_forarm = newCubeoid()
+                    // )
+                );
+                chest_cube->on_render = [&](){
                     window.MV.translate(0,0,-2.5);
-                    // if (not key_mapper.has_been_bound_already_for_this_frame)
-                    //     {
-                    //         MV.multMatrix(key_mapper.transformFromKeyPresses(MV.topMatrix()));
-                    //     }
-                    window.draw(window.MV.topMatrix());
-                });
+                };
+                left_arm->on_render = [&](){
+                    // one block to the left of the chest
+                    window.MV.translate(-1,0,0);
+                };
+                // right_arm->on_render = [&](){
+                //     // one block to the right of the chest
+                //     window.MV.translate(1,0,0);
+                // };
+                
                 render_manager.add(vertex_shader);
-                render_manager.add(a_cube);
+                render_manager.add(chest_cube);
         }
 
     // This function is called every frame to draw the scene.

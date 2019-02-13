@@ -183,6 +183,17 @@ struct KeyMapperClass
                     // return the identifier encase the user wants to detach/delete it
                     return callback_identifier;
                 }
+            KeyCallBackId onRelease(int key_code, function<void(void)> a_function)
+                {
+                    // create new KeyCallBack
+                    KeyCallBackId callback_identifier = new KeyCallBack();
+                    callback_identifier->which_key = key_code;
+                    // add the KeyCallBack to the callback map for that key
+                    auto& key = keys[key_code];
+                    key.on_release[callback_identifier] = a_function;
+                    // return the identifier encase the user wants to detach/delete it
+                    return callback_identifier;
+                }
             void deleteListener(KeyCallBackId callback_identifier)
                 {
                     // un-bind the callback from the map of callbacks
@@ -327,11 +338,15 @@ struct Cubeiod : public Renderable
         // data 
             mat4 transforms; // persistant memory of the transformations
             function<void(void)> on_render;
-            vector<Cubeiod> children;
+            vector<shared_ptr<Cubeiod>> children;
         // constuctors
-            Cubeiod(function<void(void)> input_on_render)
+            Cubeiod()
                 {
-                    on_render = input_on_render;
+                    
+                }
+            Cubeiod(std::initializer_list<shared_ptr<Cubeiod>> input_children)
+                {
+                    children = input_children;
                 }
         // methods
             void render() override
@@ -342,13 +357,14 @@ struct Cubeiod : public Renderable
                     // run the render function of each of the children
                     for (auto& each : children)
                         {
-                            each.render();
+                            each->render();
                         }
+                    window.draw(window.MV.topMatrix());
                     window.MV.popMatrix();
                 }
     };
-    // create a helper for making cubeoids
-    #define Cubeoid(FUNC) shared_ptr<Cubeiod>(new Cubeiod([&]() FUNC ))
+    // create a helper for conveinience
+    #define newCubeoid(ARGS) shared_ptr<Cubeiod>(new Cubeiod({ARGS}))
 
 
 // #define drawTheLetterA                                                                  \
