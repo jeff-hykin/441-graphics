@@ -72,33 +72,82 @@ struct Vector
 // Matrix wrapper for accessing sub elements safely
 //
 // (made this for lab3, but its not really needed after that)
-template <int ROWS=1, int COLUMNS=1>
-struct Matrix
+const vector<float> SPECIAL_IDENTITY_ROW1 = {1,0,0,0};
+const vector<float> SPECIAL_IDENTITY_ROW2 = {0,1,0,0};
+const vector<float> SPECIAL_IDENTITY_ROW3 = {0,0,1,0};
+const vector<float> SPECIAL_IDENTITY_ROW4 = {0,0,0,1};
+struct Matrix4
     {
-        mat<ROWS, COLUMNS, DEFAULT_MATRIX_VALUE> to_m;
-        Vector<COLUMNS>& operator[] (long int position)
-            {
-                return *(Vector<COLUMNS>*)(&to_m[position-1]);
-            }
-    };
-    template <int ROWS, int COLUMNS>
-    ostream& operator<<(ostream& output_stream, Matrix<ROWS, COLUMNS> input)
-        {
-            for (int each : range(ROWS))
+        // data
+            vector<vector<float>> data = {   SPECIAL_IDENTITY_ROW1,   SPECIAL_IDENTITY_ROW2,   SPECIAL_IDENTITY_ROW3,   SPECIAL_IDENTITY_ROW4  };
+        // constructors
+            Matrix4()
+                {}
+            Matrix4(mat4 input)
                 {
-                    output_stream << input[each] << "\n";
+                    data.at(0).at(0) = *(float*)&input[0][0];
+                    data.at(0).at(1) = *(float*)&input[0][1];
+                    data.at(0).at(2) = *(float*)&input[0][2];
+                    data.at(0).at(3) = *(float*)&input[0][3];
+                    
+                    data.at(1).at(0) = *(float*)&input[1][0];
+                    data.at(1).at(1) = *(float*)&input[1][1];
+                    data.at(1).at(2) = *(float*)&input[1][2];
+                    data.at(1).at(3) = *(float*)&input[1][3];
+                    
+                    data.at(2).at(0) = *(float*)&input[2][0];
+                    data.at(2).at(1) = *(float*)&input[2][1];
+                    data.at(2).at(2) = *(float*)&input[2][2];
+                    data.at(2).at(3) = *(float*)&input[2][3];
+                    
+                    data.at(3).at(0) = *(float*)&input[3][0];
+                    data.at(3).at(1) = *(float*)&input[3][1];
+                    data.at(3).at(2) = *(float*)&input[3][2];
+                    data.at(3).at(3) = *(float*)&input[3][3];
+                }
+        // methods
+            mat4 toMat4()
+                {
+                    mat4 result = mat4(              data.at(0).at(0), data.at(0).at(1), data.at(0).at(2), data.at(0).at(3),              
+                                                     data.at(1).at(0), data.at(1).at(1), data.at(1).at(2), data.at(1).at(3),
+                                                     data.at(2).at(0), data.at(2).at(1), data.at(2).at(2), data.at(2).at(3),              
+                                                     data.at(3).at(0), data.at(3).at(1), data.at(3).at(2), data.at(3).at(3)         );
+                    return result;
+                }
+        // overloads
+            operator glm::mat4()
+                {
+                    return toMat4();
+                }
+            vector<float>& operator[] (long int position)
+                {
+                    if (position < 0 or position >= 4)
+                        {
+                            cerr << "Trying to access " << position << " on a Matrix4\n";
+                            exit(0);
+                        }
+                    return data.at(position);
+                }
+    };
+    ostream& operator<<(ostream& output_stream, Matrix4 input)
+        {
+            for (auto& each_row : input.data)
+                {
+                    for (auto& each_cell : each_row)
+                        {
+                            output_stream << each_cell << ", ";
+                        }
+                    output_stream << "\n";
                 }
             return output_stream;
         }
 
 
 
-// add output method for matricies
-template <int ROWS, int COLUMNS>
-ostream& operator<<(ostream& output_stream, mat<ROWS, COLUMNS, DEFAULT_MATRIX_VALUE> input)
+// add output method for mat4
+ostream& operator<<(ostream& output_stream, mat4 input)
     {
-        Matrix<ROWS, COLUMNS> helper;
-        helper.to_m = input;
+        Matrix4 helper(input);
         output_stream << helper;
         return output_stream;
     }
@@ -335,8 +384,9 @@ struct RenderManager
 
 struct Cubeiod : public Renderable
     {
-        // data 
-            mat4 transforms = mat4(1.0); // persistant memory of the transformations
+        // data
+            int test = 0;
+            Matrix4 transforms; // persistant memory of the transformations
             function<void(void)> on_render;
             vector<shared_ptr<Cubeiod>> children;
         // constuctors
@@ -354,12 +404,14 @@ struct Cubeiod : public Renderable
                     window.MV.pushMatrix();
                     // run the render function
                     on_render();
+                    // apply the persistant transformations
+                    window.MV.multMatrix(transforms);
                     // run the render function of each of the children
                     for (auto& each : children)
                         {
                             each->render();
                         }
-                    window.draw(window.MV.topMatrix() * transforms);
+                    window.draw(window.MV.topMatrix());
                     window.MV.popMatrix();
                 }
     };

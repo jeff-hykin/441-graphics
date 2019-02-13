@@ -31,6 +31,17 @@ using namespace std;
 using namespace glm;
 
 
+mat4 scale(vec3 input)
+    {
+        mat4 Result = mat4(1);
+        Result[0] *= input.x;
+        Result[1] *= input.y;
+        Result[2] *= input.z;
+        return Result;
+    }
+
+
+
 // TODO
     // add a safety function to cubeoid when it tries to render something that doesnt have a on_render attached yet
         // catch and rethrow errors with extra info when they happen in the render functions
@@ -201,53 +212,6 @@ using namespace glm;
                 assert(norBuf.size() == posBuf.size());
 
                 GLSL::checkError(GET_FILE_LINE);
-            // 
-            // Attach renderables
-            //
-                // 
-                // Object heiracy
-                // 
-                    shared_ptr<Cubeiod> chest_cube, left_arm, left_forarm, right_arm, right_forarm;
-                    chest_cube = newCubeoid(
-                        left_arm = newCubeoid(
-                            left_forarm = newCubeoid()
-                        ),
-                        right_arm = newCubeoid(
-                            right_forarm = newCubeoid()
-                        )
-                    );
-                // 
-                // Render functions
-                // 
-                chest_cube->on_render = [&]()
-                    {
-                        window.MV.translate(0,0,-5.5);
-                    };
-                    left_arm->on_render = [&]()
-                        {
-                            // one block to the left of the chest
-                            window.MV.translate(-1.1,0,0);
-                        };
-                        left_forarm->on_render = [&]()
-                            {
-                                // one block down from the top of the arm
-                                window.MV.translate(0,-1.1,0);
-                            };
-                    right_arm->on_render = [&]()
-                        {
-                            // one block to the right of the chest
-                            window.MV.translate(1.1,0,0);
-                        };
-                        right_forarm->on_render = [&]()
-                            {
-                                // one block down from the top of the arm
-                                window.MV.translate(0,-1.1,0);
-                            };
-                // 
-                // Attach all the Renderables
-                // 
-                render_manager.add(vertex_shader);
-                render_manager.add(chest_cube);
         }
 
     // This function is called every frame to draw the scene.
@@ -320,12 +284,62 @@ using namespace glm;
 // 
 int main(int argc, char** argv)
     {
-        if(argc < 2)
-            {
-                cout << "Please specify the resource directory." << endl;
-                return 0;
-            }
-        RESOURCE_DIR = argv[1] + string("/");
+        // 
+        // Parse arguments
+        // 
+            if(argc < 2)
+                {
+                    cout << "Please specify the resource directory." << endl;
+                    return 0;
+                }
+            RESOURCE_DIR = argv[1] + string("/");
+
+        // 
+        // Create Renderable Object heiracy
+        // 
+            shared_ptr<Cubeiod> chest_cube, left_arm, left_forarm, right_arm, right_forarm;
+            chest_cube = newCubeoid(
+                left_arm = newCubeoid(
+                    left_forarm = newCubeoid()
+                ),
+                right_arm = newCubeoid(
+                    right_forarm = newCubeoid()
+                )
+            );
+        // 
+        // Render functions
+        // 
+            chest_cube->on_render = [&]()
+                {
+                    chest_cube->transforms = translate(chest_cube->transforms.toMat4(), vec3(0.01, 0, 0));
+                    window.MV.translate(0,0,-5.5);
+                };
+                left_arm->on_render = [&]()
+                    {
+                        // one block to the left of the chest
+                        window.MV.translate(-1.1,0,0);
+                    };
+                    left_forarm->on_render = [&]()
+                        {
+                            // one block down from the top of the arm
+                            window.MV.translate(0,-1.1,0);
+                        };
+                right_arm->on_render = [&]()
+                    {
+                        // one block to the right of the chest
+                        window.MV.translate(1.1,0,0);
+                    };
+                    right_forarm->on_render = [&]()
+                        {
+                            // one block down from the top of the arm
+                            window.MV.translate(0,-1.1,0);
+                        };
+        // 
+        // Attach all the Renderables
+        // 
+            render_manager.add(vertex_shader);
+            render_manager.add(chest_cube);
+
 
         // Set error callback.
         glfwSetErrorCallback(error_callback);
@@ -335,7 +349,7 @@ int main(int argc, char** argv)
                 return -1;
             }
         // Create a windowed mode window and its OpenGL context.
-        window.glfw_window = glfwCreateWindow(640, 480, "YOUR NAME", NULL, NULL);
+        window.glfw_window = glfwCreateWindow(640, 480, "Jeff Hykin", NULL, NULL);
         if(!window.glfw_window)
             {
                 glfwTerminate();

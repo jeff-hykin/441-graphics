@@ -8,7 +8,8 @@
         "vector": "cpp",
         "memory": "cpp",
         "utility": "cpp",
-        "map": "cpp"
+        "map": "cpp",
+        "iosfwd": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }
