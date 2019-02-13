@@ -336,7 +336,7 @@ struct RenderManager
 struct Cubeiod : public Renderable
     {
         // data 
-            mat4 transforms; // persistant memory of the transformations
+            mat4 transforms = mat4(1.0); // persistant memory of the transformations
             function<void(void)> on_render;
             vector<shared_ptr<Cubeiod>> children;
         // constuctors
@@ -359,12 +359,12 @@ struct Cubeiod : public Renderable
                         {
                             each->render();
                         }
-                    window.draw(window.MV.topMatrix());
+                    window.draw(window.MV.topMatrix() * transforms);
                     window.MV.popMatrix();
                 }
     };
     // create a helper for conveinience
-    #define newCubeoid(ARGS) shared_ptr<Cubeiod>(new Cubeiod({ARGS}))
+    #define newCubeoid(...) shared_ptr<Cubeiod>(new Cubeiod({__VA_ARGS__}))
 
 
 // #define drawTheLetterA                                                                  \

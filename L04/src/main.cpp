@@ -204,29 +204,48 @@ using namespace glm;
             // 
             // Attach renderables
             //
-                shared_ptr<Cubeiod> left_arm, left_forarm, right_arm, right_forarm;
-                // heirachy for robot
-                auto chest_cube = newCubeoid(
-                    left_arm = newCubeoid(
-                        // left_forarm = newCubeoid()
-                    )
-                    // ,
-                    // right_arm = newCubeoid(
-                    //     // right_forarm = newCubeoid()
-                    // )
-                );
-                chest_cube->on_render = [&](){
-                    window.MV.translate(0,0,-2.5);
-                };
-                left_arm->on_render = [&](){
-                    // one block to the left of the chest
-                    window.MV.translate(-1,0,0);
-                };
-                // right_arm->on_render = [&](){
-                //     // one block to the right of the chest
-                //     window.MV.translate(1,0,0);
-                // };
-                
+                // 
+                // Object heiracy
+                // 
+                    shared_ptr<Cubeiod> chest_cube, left_arm, left_forarm, right_arm, right_forarm;
+                    chest_cube = newCubeoid(
+                        left_arm = newCubeoid(
+                            left_forarm = newCubeoid()
+                        ),
+                        right_arm = newCubeoid(
+                            right_forarm = newCubeoid()
+                        )
+                    );
+                // 
+                // Render functions
+                // 
+                chest_cube->on_render = [&]()
+                    {
+                        window.MV.translate(0,0,-5.5);
+                    };
+                    left_arm->on_render = [&]()
+                        {
+                            // one block to the left of the chest
+                            window.MV.translate(-1.1,0,0);
+                        };
+                        left_forarm->on_render = [&]()
+                            {
+                                // one block down from the top of the arm
+                                window.MV.translate(0,-1.1,0);
+                            };
+                    right_arm->on_render = [&]()
+                        {
+                            // one block to the right of the chest
+                            window.MV.translate(1.1,0,0);
+                        };
+                        right_forarm->on_render = [&]()
+                            {
+                                // one block down from the top of the arm
+                                window.MV.translate(0,-1.1,0);
+                            };
+                // 
+                // Attach all the Renderables
+                // 
                 render_manager.add(vertex_shader);
                 render_manager.add(chest_cube);
         }
