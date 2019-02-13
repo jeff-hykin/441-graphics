@@ -300,7 +300,12 @@ int main(int argc, char** argv)
         // 
             chest_cube->on_render = [&]()
                 {
-                    chest_cube->transforms = translate(chest_cube->transforms.toMat4(), vec3(0.01, 0, 0));
+                    
+                    // chest_cube->transforms = key_mapper.transformFromKeyPresses(chest_cube->transforms.toMat4());
+                    if (key_mapper.keys[GLFW_KEY_UP           ].is_pressed == true) 
+                        {
+                            chest_cube->transforms = translate(chest_cube->transforms.toMat4(), vec3(0, 0.05, 0));
+                        }
                     window.MV.translate(0,0,-5.5);
                 };
                 left_arm->on_render = [&]()
