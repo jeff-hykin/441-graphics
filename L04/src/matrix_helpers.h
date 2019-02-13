@@ -143,7 +143,6 @@ Window window;
 struct KeyCallBack 
     {
         int which_key = -1;
-        int which_action = -1;
     };
 typedef KeyCallBack* KeyCallBackId;
 struct KeyMapperClass
@@ -152,13 +151,14 @@ struct KeyMapperClass
             struct Key
                 {
                     bool is_pressed = false;
-                    map<int, map<KeyCallBackId, function<void(void)>>> callbacks;
+                    map<KeyCallBackId, function<void(void)>> on_press;
+                    map<KeyCallBackId, function<void(void)>> on_release;
                 };
         // data
             map<int, Key> keys;
             bool has_been_bound_already_for_this_frame = false;
             
-        // constructor
+        // constructors
             KeyMapperClass()
                 {
                     // create all the keys (0-350)
@@ -172,16 +172,14 @@ struct KeyMapperClass
                     // TODO: delete all the callback identifiers
                 }
         // members
-            KeyCallBackId on(int key_code, int action, function<void(void)> a_function)
+            KeyCallBackId onPress(int key_code, function<void(void)> a_function)
                 {
                     // create new KeyCallBack
                     KeyCallBackId callback_identifier = new KeyCallBack();
                     callback_identifier->which_key = key_code;
-                    callback_identifier->which_action = action;
                     // add the KeyCallBack to the callback map for that key
                     auto& key = keys[key_code];
-                    auto& callbacks = key.callbacks[action];
-                    callbacks[callback_identifier] = a_function;
+                    key.on_press[callback_identifier] = a_function;
                     // return the identifier encase the user wants to detach/delete it
                     return callback_identifier;
                 }
@@ -189,21 +187,42 @@ struct KeyMapperClass
                 {
                     // un-bind the callback from the map of callbacks
                     auto& key = keys[callback_identifier->which_key];
-                    key.callbacks[callback_identifier->which_action].erase(callback_identifier);
+                    // delete from onpress and onrelease (it has to be one of them)
+                    try 
+                        {
+                            key.on_press.erase(callback_identifier);
+                        }
+                    catch (...) {}
+                    try 
+                        {
+                            key.on_release.erase(callback_identifier);
+                        }
+                    catch (...) {}
                     // delete the reference to prevent memory leaks
                     delete callback_identifier;
                 }
-            void keepTrackOfKeyPresses(int& action, int& key)
+            void keepTrackOfKeyPresses(int& action, int& key_code)
                     {
+                        auto& key = keys[key_code];
                         // keydown
                         if (action == GLFW_PRESS)
                             {
-                                keys[key].is_pressed = true;
+                                key.is_pressed = true;
+                                for (auto& each_callback : key.on_press)
+                                    {
+                                        // run each of the callbacks
+                                        each_callback.second();
+                                    }
                             }
                         // keyup
                         else if (action == GLFW_RELEASE)
                             {
-                                keys[key].is_pressed = false;
+                                key.is_pressed = false;
+                                for (auto& each_callback : key.on_release)
+                                    {
+                                        // run each of the callbacks
+                                        each_callback.second();
+                                    }
                             }
                     }
             void bindKeysTo(vec3& rotation, vec3& translation)
