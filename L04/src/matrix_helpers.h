@@ -126,6 +126,11 @@ struct Window
                     // Make the window's context current.
                     glfwMakeContextCurrent(glfw_window);
                 }
+            void draw(mat4 a_matrix)
+                {
+                    glUniformMatrix4fv(unifIDs["MV"], 1, GL_FALSE, value_ptr(a_matrix));
+                    glDrawArrays(GL_TRIANGLES, 0, indCount);
+                }
     };
 extern Window window;
 Window window;

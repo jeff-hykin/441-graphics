@@ -49,15 +49,6 @@ using namespace glm;
     vec3 global_translation(0,0,0);
 
 // 
-// Helpers (that have to be in main)
-// 
-    void draw(mat4 a_matrix)
-        {
-            glUniformMatrix4fv(window.unifIDs["MV"], 1, GL_FALSE, value_ptr(a_matrix));
-            glDrawArrays(GL_TRIANGLES, 0, window.indCount);
-        }
-
-// 
 // 
 // Callbacks
 // 
@@ -218,7 +209,7 @@ using namespace glm;
                     //     {
                     //         MV.multMatrix(key_mapper.transformFromKeyPresses(MV.topMatrix()));
                     //     }
-                    draw(window.MV.topMatrix());
+                    window.draw(window.MV.topMatrix());
                 });
                 render_manager.add(vertex_shader);
                 render_manager.add(a_cube);
@@ -267,8 +258,6 @@ using namespace glm;
             // DO STUFF HERE
             //
                 render_manager.renderMain();
-            
-            
             // 
             // END DO STUFF
             // 
