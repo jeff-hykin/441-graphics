@@ -31,21 +31,10 @@ using namespace std;
 using namespace glm;
 
 
-mat4 scale(vec3 input)
-    {
-        mat4 Result = mat4(1);
-        Result[0] *= input.x;
-        Result[1] *= input.y;
-        Result[2] *= input.z;
-        return Result;
-    }
-
-
 
 // TODO
     // add a safety function to cubeoid when it tries to render something that doesnt have a on_render attached yet
         // catch and rethrow errors with extra info when they happen in the render functions
-    // have Cubeoid combine persistant transformation with MV stack matrix
     // add the keybindings for , and .
     // have callbacks for change the perisitant transformation matrix on the cubeiod
 
