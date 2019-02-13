@@ -137,46 +137,83 @@ Window window;
 
 struct KeyMapperClass
     {
+        // sub classes
+            struct KeyCallBack 
+                {
+                    int which_key = -1;
+                    int which_action = -1;
+                };
+            struct Key
+                {
+                    bool is_pressed = false;
+                    map<int, map<KeyCallBack*, function<void(void)>>> callbacks;
+                };
         // data
-            map<int, bool> keys;
+            map<int, Key> keys;
             bool has_been_bound_already_for_this_frame = false;
+            
         // constructor
             KeyMapperClass()
                 {
-                    // set all the keys (0-350) to be un-pressed by default
+                    // create all the keys (0-350)
                     for (int each : range(0,350))
                         {
-                            keys[each] = false;
+                            keys[each] = Key();
                         }
+                }
+            ~KeyMapperClass()
+                {
+                    // TODO: delete all the callback identifiers
                 }
         // members
-        void keepTrackOfKeyPresses(int& action, int& key)
+            KeyCallBack* on(int key_code, int action, function<void(void)> a_function)
                 {
-                    // keydown
-                    if (action == GLFW_PRESS)
-                        {
-                            keys[key] = true;
-                        }
-                    // keyup
-                    else if (action == GLFW_RELEASE)
-                        {
-                            keys[key] = false;
-                        }
+                    // create new KeyCallBack
+                    KeyCallBack* callback_identifier = new KeyCallBack();
+                    callback_identifier->which_key = key_code;
+                    callback_identifier->which_action = action;
+                    // add the KeyCallBack to the callback map for that key
+                    auto& key = keys[key_code];
+                    auto& callbacks = key.callbacks[action];
+                    callbacks[callback_identifier] = a_function;
+                    // return the identifier encase the user wants to detach/delete it
+                    return callback_identifier;
                 }
+            void deleteListener(KeyCallBack* callback_identifier)
+                {
+                    // un-bind the callback from the map of callbacks
+                    auto& key = keys[callback_identifier->which_key];
+                    key.callbacks[callback_identifier->which_action].erase(callback_identifier);
+                    // delete the reference to prevent memory leaks
+                    delete callback_identifier;
+                }
+            void keepTrackOfKeyPresses(int& action, int& key)
+                    {
+                        // keydown
+                        if (action == GLFW_PRESS)
+                            {
+                                keys[key].is_pressed = true;
+                            }
+                        // keyup
+                        else if (action == GLFW_RELEASE)
+                            {
+                                keys[key].is_pressed = false;
+                            }
+                    }
             void bindKeysTo(vec3& rotation, vec3& translation)
                 {
-                    if (keys[GLFW_KEY_UP           ] == true) { rotation.x    += 0.05; }
-                    if (keys[GLFW_KEY_DOWN         ] == true) { rotation.x    -= 0.05; }
-                    if (keys[GLFW_KEY_LEFT         ] == true) { rotation.y    += 0.05; }
-                    if (keys[GLFW_KEY_RIGHT        ] == true) { rotation.y    -= 0.05; }
-                    if (keys[GLFW_KEY_LEFT_BRACKET ] == true) { rotation.z    += 0.05; }
-                    if (keys[GLFW_KEY_RIGHT_BRACKET] == true) { rotation.z    -= 0.05; }
-                    if (keys[GLFW_KEY_A            ] == true) { translation.x += 0.05; }
-                    if (keys[GLFW_KEY_D            ] == true) { translation.x -= 0.05; }
-                    if (keys[GLFW_KEY_E            ] == true) { translation.y += 0.05; }
-                    if (keys[GLFW_KEY_Z            ] == true) { translation.y -= 0.05; }
-                    if (keys[GLFW_KEY_W            ] == true) { translation.z += 0.05; }
-                    if (keys[GLFW_KEY_S            ] == true) { translation.z -= 0.05; }
+                    if (keys[GLFW_KEY_UP           ].is_pressed == true) { rotation.x    += 0.05; }
+                    if (keys[GLFW_KEY_DOWN         ].is_pressed == true) { rotation.x    -= 0.05; }
+                    if (keys[GLFW_KEY_LEFT         ].is_pressed == true) { rotation.y    += 0.05; }
+                    if (keys[GLFW_KEY_RIGHT        ].is_pressed == true) { rotation.y    -= 0.05; }
+                    if (keys[GLFW_KEY_LEFT_BRACKET ].is_pressed == true) { rotation.z    += 0.05; }
+                    if (keys[GLFW_KEY_RIGHT_BRACKET].is_pressed == true) { rotation.z    -= 0.05; }
+                    if (keys[GLFW_KEY_A            ].is_pressed == true) { translation.x += 0.05; }
+                    if (keys[GLFW_KEY_D            ].is_pressed == true) { translation.x -= 0.05; }
+                    if (keys[GLFW_KEY_E            ].is_pressed == true) { translation.y += 0.05; }
+                    if (keys[GLFW_KEY_Z            ].is_pressed == true) { translation.y -= 0.05; }
+                    if (keys[GLFW_KEY_W            ].is_pressed == true) { translation.z += 0.05; }
+                    if (keys[GLFW_KEY_S            ].is_pressed == true) { translation.z -= 0.05; }
                     // keep track of if the keys already bound
                     has_been_bound_already_for_this_frame = true;
                 }
@@ -185,18 +222,18 @@ struct KeyMapperClass
                 {
                     vec3 rotation;
                     vec3 translation;
-                    if (keys[GLFW_KEY_UP           ] == true) { rotation.x    += 0.05; }
-                    if (keys[GLFW_KEY_DOWN         ] == true) { rotation.x    -= 0.05; }
-                    if (keys[GLFW_KEY_LEFT         ] == true) { rotation.y    += 0.05; }
-                    if (keys[GLFW_KEY_RIGHT        ] == true) { rotation.y    -= 0.05; }
-                    if (keys[GLFW_KEY_LEFT_BRACKET ] == true) { rotation.z    += 0.05; }
-                    if (keys[GLFW_KEY_RIGHT_BRACKET] == true) { rotation.z    -= 0.05; }
-                    if (keys[GLFW_KEY_A            ] == true) { translation.x += 0.05; }
-                    if (keys[GLFW_KEY_D            ] == true) { translation.x -= 0.05; }
-                    if (keys[GLFW_KEY_E            ] == true) { translation.y += 0.05; }
-                    if (keys[GLFW_KEY_Z            ] == true) { translation.y -= 0.05; }
-                    if (keys[GLFW_KEY_W            ] == true) { translation.z += 0.05; }
-                    if (keys[GLFW_KEY_S            ] == true) { translation.z -= 0.05; }
+                    if (keys[GLFW_KEY_UP           ].is_pressed == true) { rotation.x    += 0.05; }
+                    if (keys[GLFW_KEY_DOWN         ].is_pressed == true) { rotation.x    -= 0.05; }
+                    if (keys[GLFW_KEY_LEFT         ].is_pressed == true) { rotation.y    += 0.05; }
+                    if (keys[GLFW_KEY_RIGHT        ].is_pressed == true) { rotation.y    -= 0.05; }
+                    if (keys[GLFW_KEY_LEFT_BRACKET ].is_pressed == true) { rotation.z    += 0.05; }
+                    if (keys[GLFW_KEY_RIGHT_BRACKET].is_pressed == true) { rotation.z    -= 0.05; }
+                    if (keys[GLFW_KEY_A            ].is_pressed == true) { translation.x += 0.05; }
+                    if (keys[GLFW_KEY_D            ].is_pressed == true) { translation.x -= 0.05; }
+                    if (keys[GLFW_KEY_E            ].is_pressed == true) { translation.y += 0.05; }
+                    if (keys[GLFW_KEY_Z            ].is_pressed == true) { translation.y -= 0.05; }
+                    if (keys[GLFW_KEY_W            ].is_pressed == true) { translation.z += 0.05; }
+                    if (keys[GLFW_KEY_S            ].is_pressed == true) { translation.z -= 0.05; }
                     
                     mat4 copy_of_matrix = a_matrix;
                     // apply translation
