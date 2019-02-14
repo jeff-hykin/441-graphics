@@ -310,6 +310,12 @@ int main(int argc, char** argv)
                 ),
                 right_upper_arm = newCubeoid(
                     right_lower_arm = newCubeoid()
+                ),
+                left_upper_leg = newCubeoid(
+                    left_lower_leg = newCubeoid()
+                ),
+                right_upper_leg = newCubeoid(
+                    right_lower_leg = newCubeoid()
                 )
             );
         // 
@@ -364,6 +370,31 @@ int main(int argc, char** argv)
                         {
                             standard_key_bindings(right_lower_arm, 4+1);
                             // one block down from the top of the arm
+                            window.MV.translate(0,-1.1,0);
+                        };
+                left_upper_leg->on_render = [&]()
+                    {
+                        // move halfway
+                        // one block to the left of the chest
+                        window.MV.translate(-1.1,0,0);
+                        standard_key_bindings(left_upper_leg, 1+1+4);
+                    };
+                    left_lower_leg->on_render = [&]()
+                        {
+                            // one block down from the top of the leg
+                            window.MV.translate(0,-1.1,0);
+                            standard_key_bindings(left_lower_leg, 2+1+4);
+                        };
+                right_upper_leg->on_render = [&]()
+                    {
+                        // one block to the right of the chest
+                        window.MV.translate(1.1,0,0);
+                        standard_key_bindings(right_upper_leg, 3+1+4);
+                    };
+                    right_lower_leg->on_render = [&]()
+                        {
+                            standard_key_bindings(right_lower_leg, 4+1+4);
+                            // one block down from the top of the leg
                             window.MV.translate(0,-1.1,0);
                         };
         // 
