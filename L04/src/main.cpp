@@ -332,10 +332,10 @@ int main(int argc, char** argv)
                         if (key_manager.isPressed(GLFW_KEY_Y)) { object->transforms = rotate(object->transforms.toMat4(), negative_if_shift * 0.02f, vec3(0, 1, 0)); }
                         if (key_manager.isPressed(GLFW_KEY_Z)) { object->transforms = rotate(object->transforms.toMat4(), negative_if_shift * 0.02f, vec3(0, 0, 1)); }
                         // translate
-                        if (key_manager.isPressed(GLFW_KEY_UP          ))  { object->transforms = translate(object->transforms.toMat4(), vec3(0,  0.05, 0));  }
-                        if (key_manager.isPressed(GLFW_KEY_DOWN        ))  { object->transforms = translate(object->transforms.toMat4(), vec3(0, -0.05, 0));  }
-                        if (key_manager.isPressed(GLFW_KEY_RIGHT       ))  { object->transforms = translate(object->transforms.toMat4(), vec3( 0.05,     0, 0));  }
-                        if (key_manager.isPressed(GLFW_KEY_LEFT        ))  { object->transforms = translate(object->transforms.toMat4(), vec3(-0.05,     0, 0));  }
+                        if (key_manager.isPressed(GLFW_KEY_UP          ))  { object->transforms = translate(object->transforms.toMat4(), vec3(    0,     0,  0.05));  }
+                        if (key_manager.isPressed(GLFW_KEY_DOWN        ))  { object->transforms = translate(object->transforms.toMat4(), vec3(    0,     0, -0.05));  }
+                        if (key_manager.isPressed(GLFW_KEY_RIGHT       ))  { object->transforms = translate(object->transforms.toMat4(), vec3( 0.05,     0,     0));  }
+                        if (key_manager.isPressed(GLFW_KEY_LEFT        ))  { object->transforms = translate(object->transforms.toMat4(), vec3(-0.05,     0,     0));  }
                     }
             };
             torso->on_render = [&]()
