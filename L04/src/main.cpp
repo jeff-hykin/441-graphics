@@ -376,7 +376,7 @@ int main(int argc, char** argv)
                     {
                         // move halfway
                         // one block to the left of the chest
-                        window.MV.translate(-1.1,0,0);
+                        window.MV.translate(-0.6,-1.1,0);
                         standard_key_bindings(left_upper_leg, 1+1+4);
                     };
                     left_lower_leg->on_render = [&]()
@@ -388,7 +388,7 @@ int main(int argc, char** argv)
                 right_upper_leg->on_render = [&]()
                     {
                         // one block to the right of the chest
-                        window.MV.translate(1.1,0,0);
+                        window.MV.translate(0.6,-1.1,0);
                         standard_key_bindings(right_upper_leg, 3+1+4);
                     };
                     right_lower_leg->on_render = [&]()
