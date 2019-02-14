@@ -35,8 +35,10 @@ using namespace glm;
 // TODO
     // add a safety function to cubeoid when it tries to render something that doesnt have a on_render attached yet
         // catch and rethrow errors with extra info when they happen in the render functions
-    // add the keybindings for , and .
+    // add the keybindings for , and . with "active_element_id"
     // have callbacks for change the perisitant transformation matrix on the cubeiod
+    // figure out how to rotate
+    // figure out how to color
 
 // 
 // init
@@ -64,7 +66,7 @@ using namespace glm;
     static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
         {
             cout << "action = " << action << ", key = " << key << ", x = " << global_rotation.x << ", y = " << global_rotation.y << ", z = " << global_rotation.z << ", x = " << global_translation.x << ", y = " << global_translation.y << ", z = " << global_translation.z << "\n"; 
-            key_mapper.keepTrackOfKeyPresses(action, key);
+            key_manager.keepTrackOfKeyPresses(action, key);
             // close on escape
             if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
                 {
@@ -241,7 +243,7 @@ using namespace glm;
                 
                 window.MV.pushMatrix();
                 // reset the keybinding each frame
-                key_mapper.has_been_bound_already_for_this_frame = false;
+                key_manager.has_been_bound_already_for_this_frame = false;
             //
             // DO STUFF HERE
             //
@@ -284,47 +286,77 @@ int main(int argc, char** argv)
             RESOURCE_DIR = argv[1] + string("/");
 
         // 
+        // Keybindings
+        // 
+            int active_element = 0;
+            key_manager.onPress(GLFW_KEY_PERIOD, [&](){
+                    // TODO: cap it out after the max number of elements
+                    active_element++;
+                });
+            key_manager.onPress(GLFW_KEY_COMMA, [&](){
+                    if (active_element > 0)
+                        {
+                            active_element--;
+                        }
+                });
+        // 
         // Create Renderable Object heiracy
         // 
-            shared_ptr<Cubeiod> chest_cube, left_arm, left_forarm, right_arm, right_forarm;
-            chest_cube = newCubeoid(
-                left_arm = newCubeoid(
-                    left_forarm = newCubeoid()
+            shared_ptr<Cubeiod> torso, left_upper_arm, left_lower_arm, right_upper_arm, right_lower_arm;
+            torso = newCubeoid(
+                left_upper_arm = newCubeoid(
+                    left_lower_arm = newCubeoid()
                 ),
-                right_arm = newCubeoid(
-                    right_forarm = newCubeoid()
+                right_upper_arm = newCubeoid(
+                    right_lower_arm = newCubeoid()
                 )
             );
         // 
         // Render functions
         // 
-            chest_cube->on_render = [&]()
-                {
-                    
-                    // chest_cube->transforms = key_mapper.transformFromKeyPresses(chest_cube->transforms.toMat4());
-                    if (key_mapper.keys[GLFW_KEY_UP           ].is_pressed == true) 
-                        {
-                            chest_cube->transforms = translate(chest_cube->transforms.toMat4(), vec3(0, 0.05, 0));
-                        }
-                    window.MV.translate(0,0,-5.5);
-                };
-                left_arm->on_render = [&]()
+            auto standard_key_bindings = [&](shared_ptr<Cubeiod> object, int element_number){
+                // when this is the active element then listen to the keybindings
+                if (active_element == element_number)
                     {
+                        bool shift_is_pressed = key_manager.isPressed(GLFW_KEY_LEFT_SHIFT) or key_manager.isPressed(GLFW_KEY_RIGHT_SHIFT);
+                        int negative_if_shift = shift_is_pressed ? -1 : 1 ;
+                        // x,y,z rotation
+                        if (key_manager.isPressed(GLFW_KEY_X)) { object->transforms = rotate(object->transforms.toMat4(), negative_if_shift * 0.02f, vec3(1, 0, 0)); }
+                        if (key_manager.isPressed(GLFW_KEY_Y)) { object->transforms = rotate(object->transforms.toMat4(), negative_if_shift * 0.02f, vec3(0, 1, 0)); }
+                        if (key_manager.isPressed(GLFW_KEY_Z)) { object->transforms = rotate(object->transforms.toMat4(), negative_if_shift * 0.02f, vec3(0, 0, 1)); }
+                        // translate
+                        if (key_manager.isPressed(GLFW_KEY_UP          ))  { object->transforms = translate(object->transforms.toMat4(), vec3(0,  0.05, 0));  }
+                        if (key_manager.isPressed(GLFW_KEY_DOWN        ))  { object->transforms = translate(object->transforms.toMat4(), vec3(0, -0.05, 0));  }
+                    }
+            };
+            torso->on_render = [&]()
+                {
+                    // move it back a little bit relative from the starting point
+                    window.MV.translate(0,0,-5.5);
+                    standard_key_bindings(torso, 0);
+                };
+                left_upper_arm->on_render = [&]()
+                    {
+                        // move halfway
                         // one block to the left of the chest
                         window.MV.translate(-1.1,0,0);
+                        standard_key_bindings(left_upper_arm, 1);
                     };
-                    left_forarm->on_render = [&]()
+                    left_lower_arm->on_render = [&]()
                         {
                             // one block down from the top of the arm
                             window.MV.translate(0,-1.1,0);
+                            standard_key_bindings(left_lower_arm, 2);
                         };
-                right_arm->on_render = [&]()
+                right_upper_arm->on_render = [&]()
                     {
                         // one block to the right of the chest
                         window.MV.translate(1.1,0,0);
+                        standard_key_bindings(right_upper_arm, 3);
                     };
-                    right_forarm->on_render = [&]()
+                    right_lower_arm->on_render = [&]()
                         {
+                            standard_key_bindings(right_lower_arm, 4);
                             // one block down from the top of the arm
                             window.MV.translate(0,-1.1,0);
                         };
@@ -332,8 +364,7 @@ int main(int argc, char** argv)
         // Attach all the Renderables
         // 
             render_manager.add(vertex_shader);
-            render_manager.add(chest_cube);
-
+            render_manager.add(torso);
 
         // Set error callback.
         glfwSetErrorCallback(error_callback);

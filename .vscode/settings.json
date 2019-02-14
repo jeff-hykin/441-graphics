@@ -9,7 +9,8 @@
         "memory": "cpp",
         "utility": "cpp",
         "map": "cpp",
-        "iosfwd": "cpp"
+        "iosfwd": "cpp",
+        "regex": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

@@ -221,6 +221,11 @@ struct KeyMapperClass
                     // TODO: delete all the callback identifiers
                 }
         // members
+            // this is for brevity/convienience externally
+            bool isPressed(int key_code)
+                {
+                    return keys[key_code].is_pressed;
+                }
             KeyCallBackId onPress(int key_code, function<void(void)> a_function)
                 {
                     // create new KeyCallBack
@@ -285,58 +290,9 @@ struct KeyMapperClass
                                     }
                             }
                     }
-            void bindKeysTo(vec3& rotation, vec3& translation)
-                {
-                    if (keys[GLFW_KEY_UP           ].is_pressed == true) { rotation.x    += 0.05; }
-                    if (keys[GLFW_KEY_DOWN         ].is_pressed == true) { rotation.x    -= 0.05; }
-                    if (keys[GLFW_KEY_LEFT         ].is_pressed == true) { rotation.y    += 0.05; }
-                    if (keys[GLFW_KEY_RIGHT        ].is_pressed == true) { rotation.y    -= 0.05; }
-                    if (keys[GLFW_KEY_LEFT_BRACKET ].is_pressed == true) { rotation.z    += 0.05; }
-                    if (keys[GLFW_KEY_RIGHT_BRACKET].is_pressed == true) { rotation.z    -= 0.05; }
-                    if (keys[GLFW_KEY_A            ].is_pressed == true) { translation.x += 0.05; }
-                    if (keys[GLFW_KEY_D            ].is_pressed == true) { translation.x -= 0.05; }
-                    if (keys[GLFW_KEY_E            ].is_pressed == true) { translation.y += 0.05; }
-                    if (keys[GLFW_KEY_Z            ].is_pressed == true) { translation.y -= 0.05; }
-                    if (keys[GLFW_KEY_W            ].is_pressed == true) { translation.z += 0.05; }
-                    if (keys[GLFW_KEY_S            ].is_pressed == true) { translation.z -= 0.05; }
-                    // keep track of if the keys already bound
-                    has_been_bound_already_for_this_frame = true;
-                }
-            // apply incremental changes to a matrix
-            mat4 transformFromKeyPresses(const mat4& a_matrix)
-                {
-                    vec3 rotation;
-                    vec3 translation;
-                    if (keys[GLFW_KEY_UP           ].is_pressed == true) { rotation.x    += 0.05; }
-                    if (keys[GLFW_KEY_DOWN         ].is_pressed == true) { rotation.x    -= 0.05; }
-                    if (keys[GLFW_KEY_LEFT         ].is_pressed == true) { rotation.y    += 0.05; }
-                    if (keys[GLFW_KEY_RIGHT        ].is_pressed == true) { rotation.y    -= 0.05; }
-                    if (keys[GLFW_KEY_LEFT_BRACKET ].is_pressed == true) { rotation.z    += 0.05; }
-                    if (keys[GLFW_KEY_RIGHT_BRACKET].is_pressed == true) { rotation.z    -= 0.05; }
-                    if (keys[GLFW_KEY_A            ].is_pressed == true) { translation.x += 0.05; }
-                    if (keys[GLFW_KEY_D            ].is_pressed == true) { translation.x -= 0.05; }
-                    if (keys[GLFW_KEY_E            ].is_pressed == true) { translation.y += 0.05; }
-                    if (keys[GLFW_KEY_Z            ].is_pressed == true) { translation.y -= 0.05; }
-                    if (keys[GLFW_KEY_W            ].is_pressed == true) { translation.z += 0.05; }
-                    if (keys[GLFW_KEY_S            ].is_pressed == true) { translation.z -= 0.05; }
-                    
-                    mat4 copy_of_matrix = a_matrix;
-                    // apply translation
-                    copy_of_matrix *= translate(mat4(1.0f), translation);
-                    // apply rotation
-                    copy_of_matrix *= rotate(mat4(1.0f), rotation.x, vec3(1,0,0));
-                    copy_of_matrix *= rotate(mat4(1.0f), rotation.y, vec3(0,1,0));
-                    copy_of_matrix *= rotate(mat4(1.0f), rotation.z, vec3(0,0,1));
-                    
-                    // keep track of if the keys already bound
-                    has_been_bound_already_for_this_frame = true;
-                    
-                    // return the transformation matrix
-                    return copy_of_matrix;
-                }
     };
-extern KeyMapperClass key_mapper; // declare
-KeyMapperClass key_mapper; // init
+extern KeyMapperClass key_manager; // declare
+KeyMapperClass key_manager; // init
 
 
 
