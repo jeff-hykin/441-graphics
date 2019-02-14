@@ -362,8 +362,10 @@ int main(int argc, char** argv)
                     };
                     left_lower_arm->on_render = [&]()
                         {
+                            window.MV.scale(2, 1, 2);
                             window.MV.translate(0,-0.5,0);
                             standard_key_bindings(left_lower_arm, 2+1);
+                            window.MV.scale(0.5, 1, 0.5);
                             window.MV.translate(0,-0.5,0);
                         };
                 right_upper_arm->on_render = [&]()
