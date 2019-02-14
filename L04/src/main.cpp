@@ -25,30 +25,20 @@
 #include "MatrixStack.h"
 #include "tiny_obj_loader.h"
 
-#include "matrix_helpers.h"
+#include "classes.h"
 
 using namespace std;
 using namespace glm;
 
 
 
-// TODO
-    // figure out how to color
-    // add a safety function to cubeoid when it tries to render something that doesnt have a on_render attached yet
-        // catch and rethrow errors with extra info when they happen in the render functions
-
-#define DEBUGGING
-
 // 
 // init
 // 
-
     string      RESOURCE_DIR = "./"; // Where the resources are loaded from
     auto                vertex_shader = shared_ptr<VertexShader>(new VertexShader());
     FragmentShader      fragment_shader;
     RenderManager       render_manager;
-    vec3 global_rotation;
-    vec3 global_translation(0,0,0);
 
 // 
 // 
@@ -64,9 +54,6 @@ using namespace glm;
     // This function is called when a key is pressed
     static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
         {
-            #ifdef DEBUGGING
-                cout << "action = " << action << ", key = " << key << ", x = " << global_rotation.x << ", y = " << global_rotation.y << ", z = " << global_rotation.z << ", x = " << global_translation.x << ", y = " << global_translation.y << ", z = " << global_translation.z << "\n"; 
-            #endif
             key_manager.keepTrackOfKeyPresses(action, key);
             // close on escape
             if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
@@ -288,11 +275,10 @@ int main(int argc, char** argv)
             RESOURCE_DIR = argv[1] + string("/");
 
         // 
-        // Keybindings
+        // Keybindings setup
         // 
             int active_element = 0;
             key_manager.onPress(GLFW_KEY_PERIOD, [&](){
-                    // TODO: cap it out after the max number of elements
                     active_element++;
                 });
             key_manager.onPress(GLFW_KEY_COMMA, [&](){
@@ -301,7 +287,7 @@ int main(int argc, char** argv)
                             active_element--;
                         }
                 });
-            auto standard_key_bindings = [&](shared_ptr<Cubeiod> object, int element_number){
+            auto map_keybindings_on_active_element = [&](shared_ptr<Component> object, int element_number){
                 // when this is the active element then listen to the keybindings
                 if (active_element == element_number)
                     {
@@ -325,7 +311,7 @@ int main(int argc, char** argv)
         // 
         // Create Renderable Object heiracy
         // 
-            shared_ptr<Cubeiod> torso, head, left_upper_arm, left_lower_arm, right_upper_arm, right_lower_arm, left_upper_leg, left_lower_leg, right_upper_leg, right_lower_leg;
+            shared_ptr<Component> torso, head, left_upper_arm, left_lower_arm, right_upper_arm, right_lower_arm, left_upper_leg, left_lower_leg, right_upper_leg, right_lower_leg;
             torso = newCubeoid(
                 head = newCubeoid(),
                 left_upper_arm = newCubeoid(
@@ -346,13 +332,13 @@ int main(int argc, char** argv)
         // 
             torso->on_render = [&]()
                 {
-                    window.MV.translate(0,0,-5.5);
-                    standard_key_bindings(torso, 0);
+                    window.MV.translate(0,1,-5.5);
+                    map_keybindings_on_active_element(torso, 0);
                 };
                 head->on_render = [&]()
                     {
                         window.MV.translate(0,0.5,0);
-                        standard_key_bindings(head, 1);
+                        map_keybindings_on_active_element(head, 1);
                         window.MV.scale(0.5, 0.5, 0.5);
                         window.MV.translate(0,0.5,0);
                     };
@@ -363,7 +349,7 @@ int main(int argc, char** argv)
                 left_upper_arm->on_render = [&]()
                     {
                         window.MV.translate(-0.5, 0.5,0);
-                        standard_key_bindings(left_upper_arm, 2);
+                        map_keybindings_on_active_element(left_upper_arm, 2);
                         window.MV.scale(arm_scale);
                         window.MV.translate(-arm_offset.x, arm_offset.y, arm_offset.z);
                     };
@@ -371,14 +357,14 @@ int main(int argc, char** argv)
                         {
                             window.MV.scale(inverse_arm_scale);
                             window.MV.translate(lower_arm_translate);
-                            standard_key_bindings(left_lower_arm, 3);
+                            map_keybindings_on_active_element(left_lower_arm, 3);
                             window.MV.scale(arm_scale);
                             window.MV.translate(lower_arm_translate);
                         };
                 right_upper_arm->on_render = [&]()
                     {
                         window.MV.translate(0.5, 0.5,0);
-                        standard_key_bindings(right_upper_arm, 4);
+                        map_keybindings_on_active_element(right_upper_arm, 4);
                         window.MV.scale(arm_scale);
                         window.MV.translate(arm_offset.x, arm_offset.y, arm_offset.z);
                     };
@@ -386,7 +372,7 @@ int main(int argc, char** argv)
                         {
                             window.MV.scale(inverse_arm_scale);
                             window.MV.translate(lower_arm_translate);
-                            standard_key_bindings(right_lower_arm, 5);
+                            map_keybindings_on_active_element(right_lower_arm, 5);
                             window.MV.scale(arm_scale);
                             window.MV.translate(lower_arm_translate);
                         };
@@ -398,7 +384,7 @@ int main(int argc, char** argv)
                 left_upper_leg->on_render = [&]()
                     {
                         window.MV.translate(-leg_rotate_axis.x, leg_rotate_axis.y, leg_rotate_axis.z);
-                        standard_key_bindings(left_upper_leg, 6);
+                        map_keybindings_on_active_element(left_upper_leg, 6);
                         window.MV.scale(leg_scale);
                         window.MV.translate(leg_offset);
                     };
@@ -406,14 +392,14 @@ int main(int argc, char** argv)
                         {
                             window.MV.scale(inverse_leg_scale);
                             window.MV.translate(lower_leg_translate);
-                            standard_key_bindings(left_lower_leg, 7);
+                            map_keybindings_on_active_element(left_lower_leg, 7);
                             window.MV.scale(leg_scale);
                             window.MV.translate(lower_leg_translate);
                         };
                 right_upper_leg->on_render = [&]()
                     {
                         window.MV.translate(leg_rotate_axis.x, leg_rotate_axis.y, leg_rotate_axis.z);
-                        standard_key_bindings(right_upper_leg, 8);
+                        map_keybindings_on_active_element(right_upper_leg, 8);
                         window.MV.scale(leg_scale);
                         window.MV.translate(leg_offset);
                     };
@@ -421,7 +407,7 @@ int main(int argc, char** argv)
                         {
                             window.MV.scale(inverse_leg_scale);
                             window.MV.translate(lower_leg_translate);
-                            standard_key_bindings(right_lower_leg, 9);
+                            map_keybindings_on_active_element(right_lower_leg, 9);
                             window.MV.scale(leg_scale);
                             window.MV.translate(lower_leg_translate);
                         };
@@ -430,56 +416,58 @@ int main(int argc, char** argv)
         // 
             render_manager.add(vertex_shader);
             render_manager.add(torso);
-
-        // Set error callback.
-        glfwSetErrorCallback(error_callback);
-        // Initialize the library.
-        if(!glfwInit())
-            {
-                return -1;
-            }
-        // Create a windowed mode window and its OpenGL context.
-        window.glfw_window = glfwCreateWindow(640, 480, "Jeff Hykin", NULL, NULL);
-        if(!window.glfw_window)
-            {
-                glfwTerminate();
-                return -1;
-            }
-        // Make the window's context current.
-        glfwMakeContextCurrent(window.glfw_window);
-        // Initialize GLEW.
-        glewExperimental = true;
-        if(glewInit() != GLEW_OK)
-            {
-                cerr << "Failed to initialize GLEW" << endl;
-                return -1;
-            }
-        glGetError(); // A bug in glewInit() causes an error that we can safely ignore.
-        cout << "OpenGL version: " << glGetString(GL_VERSION) << endl;
-        cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
-        GLSL::checkVersion();
-        // Set vsync.
-        glfwSwapInterval(1);
-        // Set keyboard callback.
-        glfwSetKeyCallback(window.glfw_window, key_callback);
-        // Set the mouse call back.
-        glfwSetMouseButtonCallback(window.glfw_window, mouse_callback);
-        // Set the window resize call back.
-        glfwSetFramebufferSizeCallback(window.glfw_window, resize_callback);
-        // Initialize scene.
-        init();
-        // Loop until the user closes the window.
-        while(!glfwWindowShouldClose(window.glfw_window))
-            {
-                // Render scene.
-                render();
-                // Swap front and back buffers.
-                glfwSwapBuffers(window.glfw_window);
-                // Poll for and process events.
-                glfwPollEvents();
-            }
-        // Quit program.
-        glfwDestroyWindow(window.glfw_window);
-        glfwTerminate();
-        return 0;
+        // 
+        // OpenGL window setup/run/close
+        // 
+            // Set error callback.
+            glfwSetErrorCallback(error_callback);
+            // Initialize the library.
+            if(!glfwInit())
+                {
+                    return -1;
+                }
+            // Create a windowed mode window and its OpenGL context.
+            window.glfw_window = glfwCreateWindow(640, 480, "Jeff Hykin", NULL, NULL);
+            if(!window.glfw_window)
+                {
+                    glfwTerminate();
+                    return -1;
+                }
+            // Make the window's context current.
+            glfwMakeContextCurrent(window.glfw_window);
+            // Initialize GLEW.
+            glewExperimental = true;
+            if(glewInit() != GLEW_OK)
+                {
+                    cerr << "Failed to initialize GLEW" << endl;
+                    return -1;
+                }
+            glGetError(); // A bug in glewInit() causes an error that we can safely ignore.
+            cout << "OpenGL version: " << glGetString(GL_VERSION) << endl;
+            cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
+            GLSL::checkVersion();
+            // Set vsync.
+            glfwSwapInterval(1);
+            // Set keyboard callback.
+            glfwSetKeyCallback(window.glfw_window, key_callback);
+            // Set the mouse call back.
+            glfwSetMouseButtonCallback(window.glfw_window, mouse_callback);
+            // Set the window resize call back.
+            glfwSetFramebufferSizeCallback(window.glfw_window, resize_callback);
+            // Initialize scene.
+            init();
+            // Loop until the user closes the window.
+            while(!glfwWindowShouldClose(window.glfw_window))
+                {
+                    // Render scene.
+                    render();
+                    // Swap front and back buffers.
+                    glfwSwapBuffers(window.glfw_window);
+                    // Poll for and process events.
+                    glfwPollEvents();
+                }
+            // Quit program.
+            glfwDestroyWindow(window.glfw_window);
+            glfwTerminate();
+            return 0;
     }
