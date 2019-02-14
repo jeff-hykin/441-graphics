@@ -37,6 +37,8 @@ using namespace glm;
     // add a safety function to cubeoid when it tries to render something that doesnt have a on_render attached yet
         // catch and rethrow errors with extra info when they happen in the render functions
 
+#define DEBUGGING
+
 // 
 // init
 // 
@@ -62,7 +64,9 @@ using namespace glm;
     // This function is called when a key is pressed
     static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
         {
-            cout << "action = " << action << ", key = " << key << ", x = " << global_rotation.x << ", y = " << global_rotation.y << ", z = " << global_rotation.z << ", x = " << global_translation.x << ", y = " << global_translation.y << ", z = " << global_translation.z << "\n"; 
+            #ifdef DEBUGGING
+                cout << "action = " << action << ", key = " << key << ", x = " << global_rotation.x << ", y = " << global_rotation.y << ", z = " << global_rotation.z << ", x = " << global_translation.x << ", y = " << global_translation.y << ", z = " << global_translation.z << "\n"; 
+            #endif
             key_manager.keepTrackOfKeyPresses(action, key);
             // close on escape
             if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
@@ -126,6 +130,7 @@ using namespace glm;
                 // Get uniform IDs
                 window.unifIDs["P"]  = glGetUniformLocation(window.progID, "P");
                 window.unifIDs["MV"] = glGetUniformLocation(window.progID, "MV");
+                window.unifIDs["active"] = glGetUniformLocation(window.progID, "active");
 
             //
             // Vertex buffer setup
@@ -312,8 +317,9 @@ int main(int argc, char** argv)
                         if (key_manager.isPressed(GLFW_KEY_DOWN        ))  { object->transforms = translate(object->transforms.toMat4(), vec3(    0,     0, -0.05));  }
                         if (key_manager.isPressed(GLFW_KEY_RIGHT       ))  { object->transforms = translate(object->transforms.toMat4(), vec3( 0.05,     0,     0));  }
                         if (key_manager.isPressed(GLFW_KEY_LEFT        ))  { object->transforms = translate(object->transforms.toMat4(), vec3(-0.05,     0,     0));  }
-                        // tell the object to update itself
+                        window.next_render_special = true;
                     }
+                // tell the object to update itself
                 object->transform();
             };
         // 

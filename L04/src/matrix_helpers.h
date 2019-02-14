@@ -162,6 +162,8 @@ struct Window
             map<string, GLint>  unifIDs;
             map<string, GLuint> bufIDs;
             int                 indCount;
+            bool                next_render_special = false;
+            float               next_render_value = 0.5;
             MatrixStack MV;
         // methods
             void init(int width=640, int height=480, string name="", GLFWmonitor* monitor_ptr=NULL, GLFWwindow* window_ptr=NULL)
@@ -177,6 +179,16 @@ struct Window
                 }
             void draw(mat4 a_matrix)
                 {
+                    if (next_render_special)
+                        {
+                            next_render_value = 0.5;
+                        }
+                    else
+                        {
+                            next_render_value = 1;
+                        }
+                    glUniform1fv(unifIDs["active"], 1, &next_render_value);
+                    next_render_special = false;
                     glUniformMatrix4fv(unifIDs["MV"], 1, GL_FALSE, value_ptr(a_matrix));
                     glDrawArrays(GL_TRIANGLES, 0, indCount);
                 }
