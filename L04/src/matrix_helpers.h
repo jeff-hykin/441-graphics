@@ -382,12 +382,12 @@ struct Cubeiod : public Renderable
                         {
                             transform();
                         }
+                    window.draw(window.MV.topMatrix());
                     // run the render function of each of the children
                     for (auto& each : children)
                         {
                             each->render();
                         }
-                    window.draw(window.MV.topMatrix());
                     window.MV.popMatrix();
                 }
     };
