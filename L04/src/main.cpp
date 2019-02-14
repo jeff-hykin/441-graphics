@@ -299,6 +299,26 @@ int main(int argc, char** argv)
                             active_element--;
                         }
                 });
+            auto standard_key_bindings = [&](shared_ptr<Cubeiod> object, int element_number){
+                // when this is the active element then listen to the keybindings
+                if (active_element == element_number)
+                    {
+                        bool shift_is_pressed = key_manager.isPressed(GLFW_KEY_LEFT_SHIFT) or key_manager.isPressed(GLFW_KEY_RIGHT_SHIFT);
+                        int negative_if_shift = shift_is_pressed ? -1 : 1 ;
+                        // scale
+                        // x,y,z rotation
+                        if (key_manager.isPressed(GLFW_KEY_X)) { object->transforms = rotate(object->transforms.toMat4(), negative_if_shift * 0.02f, vec3(1, 0, 0)); }
+                        if (key_manager.isPressed(GLFW_KEY_Y)) { object->transforms = rotate(object->transforms.toMat4(), negative_if_shift * 0.02f, vec3(0, 1, 0)); }
+                        if (key_manager.isPressed(GLFW_KEY_Z)) { object->transforms = rotate(object->transforms.toMat4(), negative_if_shift * 0.02f, vec3(0, 0, 1)); }
+                        // translate
+                        if (key_manager.isPressed(GLFW_KEY_UP          ))  { object->transforms = translate(object->transforms.toMat4(), vec3(    0,     0,  0.05));  }
+                        if (key_manager.isPressed(GLFW_KEY_DOWN        ))  { object->transforms = translate(object->transforms.toMat4(), vec3(    0,     0, -0.05));  }
+                        if (key_manager.isPressed(GLFW_KEY_RIGHT       ))  { object->transforms = translate(object->transforms.toMat4(), vec3( 0.05,     0,     0));  }
+                        if (key_manager.isPressed(GLFW_KEY_LEFT        ))  { object->transforms = translate(object->transforms.toMat4(), vec3(-0.05,     0,     0));  }
+                        // tell the object to update itself
+                    }
+                object->transform();
+            };
         // 
         // Create Renderable Object heiracy
         // 
@@ -321,26 +341,6 @@ int main(int argc, char** argv)
         // 
         // Render functions
         // 
-            auto standard_key_bindings = [&](shared_ptr<Cubeiod> object, int element_number){
-                // when this is the active element then listen to the keybindings
-                if (active_element == element_number)
-                    {
-                        bool shift_is_pressed = key_manager.isPressed(GLFW_KEY_LEFT_SHIFT) or key_manager.isPressed(GLFW_KEY_RIGHT_SHIFT);
-                        int negative_if_shift = shift_is_pressed ? -1 : 1 ;
-                        // scale
-                        // x,y,z rotation
-                        if (key_manager.isPressed(GLFW_KEY_X)) { object->transforms = rotate(object->transforms.toMat4(), negative_if_shift * 0.02f, vec3(1, 0, 0)); }
-                        if (key_manager.isPressed(GLFW_KEY_Y)) { object->transforms = rotate(object->transforms.toMat4(), negative_if_shift * 0.02f, vec3(0, 1, 0)); }
-                        if (key_manager.isPressed(GLFW_KEY_Z)) { object->transforms = rotate(object->transforms.toMat4(), negative_if_shift * 0.02f, vec3(0, 0, 1)); }
-                        // translate
-                        if (key_manager.isPressed(GLFW_KEY_UP          ))  { object->transforms = translate(object->transforms.toMat4(), vec3(    0,     0,  0.05));  }
-                        if (key_manager.isPressed(GLFW_KEY_DOWN        ))  { object->transforms = translate(object->transforms.toMat4(), vec3(    0,     0, -0.05));  }
-                        if (key_manager.isPressed(GLFW_KEY_RIGHT       ))  { object->transforms = translate(object->transforms.toMat4(), vec3( 0.05,     0,     0));  }
-                        if (key_manager.isPressed(GLFW_KEY_LEFT        ))  { object->transforms = translate(object->transforms.toMat4(), vec3(-0.05,     0,     0));  }
-                        // tell the object to update itself
-                    }
-                object->transform();
-            };
             torso->on_render = [&]()
                 {
                     window.MV.translate(0,0,-5.5);
