@@ -37,37 +37,6 @@ using namespace std;
 using namespace glm;
 using namespace helpers;
 
-#define DEFAULT_MATRIX_VALUE f32, defaultp
-
-// 
-// Vector wrapper
-// 
-template <int ROWS=1>
-struct Vector
-    {
-        vec<ROWS, DEFAULT_MATRIX_VALUE> to_v;
-        float& operator[] (long int position)
-            {
-                if (position > ROWS) 
-                    {
-                        cerr << "Tried to access position " << position << " on a vector with only " << ROWS << " rows ";
-                        exit(1);
-                    }
-                return to_v[position - 1];
-            }
-    };
-    template <int ROWS>
-    ostream& operator<<(ostream& output_stream, Vector<ROWS> input)
-        {
-            for (int each : range(ROWS))
-                {
-                    output_stream << input[each] << ", ";
-                }
-            return output_stream;
-        }
-
-
-
 // 
 // Matrix wrapper for accessing sub elements safely
 //
