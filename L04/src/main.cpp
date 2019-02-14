@@ -302,8 +302,9 @@ int main(int argc, char** argv)
         // 
         // Create Renderable Object heiracy
         // 
-            shared_ptr<Cubeiod> torso, left_upper_arm, left_lower_arm, right_upper_arm, right_lower_arm;
+            shared_ptr<Cubeiod> torso, head, left_upper_arm, left_lower_arm, right_upper_arm, right_lower_arm, left_upper_leg, left_lower_leg, right_upper_leg, right_lower_leg;
             torso = newCubeoid(
+                head = newCubeoid(),
                 left_upper_arm = newCubeoid(
                     left_lower_arm = newCubeoid()
                 ),
@@ -335,28 +336,33 @@ int main(int argc, char** argv)
                     window.MV.translate(0,0,-5.5);
                     standard_key_bindings(torso, 0);
                 };
+                head->on_render = [&]()
+                    {
+                        window.MV.translate(0,1,0);
+                        standard_key_bindings(head, 1);
+                    };
                 left_upper_arm->on_render = [&]()
                     {
                         // move halfway
                         // one block to the left of the chest
                         window.MV.translate(-1.1,0,0);
-                        standard_key_bindings(left_upper_arm, 1);
+                        standard_key_bindings(left_upper_arm, 1+1);
                     };
                     left_lower_arm->on_render = [&]()
                         {
                             // one block down from the top of the arm
                             window.MV.translate(0,-1.1,0);
-                            standard_key_bindings(left_lower_arm, 2);
+                            standard_key_bindings(left_lower_arm, 2+1);
                         };
                 right_upper_arm->on_render = [&]()
                     {
                         // one block to the right of the chest
                         window.MV.translate(1.1,0,0);
-                        standard_key_bindings(right_upper_arm, 3);
+                        standard_key_bindings(right_upper_arm, 3+1);
                     };
                     right_lower_arm->on_render = [&]()
                         {
-                            standard_key_bindings(right_lower_arm, 4);
+                            standard_key_bindings(right_lower_arm, 4+1);
                             // one block down from the top of the arm
                             window.MV.translate(0,-1.1,0);
                         };
