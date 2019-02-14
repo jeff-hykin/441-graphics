@@ -341,9 +341,6 @@ int main(int argc, char** argv)
                     }
                 object->transform();
             };
-            auto undo_torso_changes = [&](){
-                window.MV.scale(0.3, 0.3, 1);
-            };
             torso->on_render = [&]()
                 {
                     window.MV.translate(0,0,-5.5);
@@ -351,27 +348,30 @@ int main(int argc, char** argv)
                 };
                 head->on_render = [&]()
                     {
-                        window.MV.scale(0.5, 0.5, 0.5);
-                        window.MV.translate(0,1,0);
+                        window.MV.translate(0,0.5,0);
                         standard_key_bindings(head, 1);
+                        window.MV.scale(0.5, 0.5, 0.5);
                         window.MV.translate(0,0.5,0);
                     };
                 left_upper_arm->on_render = [&]()
                     {
-                        window.MV.scale(0.5, 1, 0.5);
-                        window.MV.translate(-1,1,0);
+                        window.MV.translate(-0.5, 0.5,0);
                         standard_key_bindings(left_upper_arm, 1+1);
-                        window.MV.translate(-0.55,-1,0);;
+                        window.MV.scale(0.5, 1, 0.5);
+                        window.MV.translate(-0.55, -0.5, 0);
                     };
                     left_lower_arm->on_render = [&]()
                         {
-                            window.MV.translate(0,-1.1,0);
+                            window.MV.translate(0,-0.5,0);
                             standard_key_bindings(left_lower_arm, 2+1);
+                            window.MV.translate(0,-0.5,0);
                         };
                 right_upper_arm->on_render = [&]()
                     {
-                        window.MV.translate(1.1,0,0);
+                        window.MV.scale(0.5, 1, 0.5);
+                        window.MV.translate(1,1,0);
                         standard_key_bindings(right_upper_arm, 3+1);
+                        window.MV.translate(0.55,-1,0);
                     };
                     right_lower_arm->on_render = [&]()
                         {
