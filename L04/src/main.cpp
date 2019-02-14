@@ -33,12 +33,9 @@ using namespace glm;
 
 
 // TODO
+    // figure out how to color
     // add a safety function to cubeoid when it tries to render something that doesnt have a on_render attached yet
         // catch and rethrow errors with extra info when they happen in the render functions
-    // add the keybindings for , and . with "active_element_id"
-    // have callbacks for change the perisitant transformation matrix on the cubeiod
-    // figure out how to rotate
-    // figure out how to color
 
 // 
 // init
