@@ -338,7 +338,6 @@ int main(int argc, char** argv)
             };
             torso->on_render = [&]()
                 {
-                    // move it back a little bit relative from the starting point
                     window.MV.translate(0,0,-5.5);
                     standard_key_bindings(torso, 0);
                 };
@@ -349,53 +348,43 @@ int main(int argc, char** argv)
                     };
                 left_upper_arm->on_render = [&]()
                     {
-                        // move halfway
-                        // one block to the left of the chest
                         window.MV.translate(-1.1,0,0);
                         standard_key_bindings(left_upper_arm, 1+1);
                     };
                     left_lower_arm->on_render = [&]()
                         {
-                            // one block down from the top of the arm
                             window.MV.translate(0,-1.1,0);
                             standard_key_bindings(left_lower_arm, 2+1);
                         };
                 right_upper_arm->on_render = [&]()
                     {
-                        // one block to the right of the chest
                         window.MV.translate(1.1,0,0);
                         standard_key_bindings(right_upper_arm, 3+1);
                     };
                     right_lower_arm->on_render = [&]()
                         {
-                            standard_key_bindings(right_lower_arm, 4+1);
-                            // one block down from the top of the arm
                             window.MV.translate(0,-1.1,0);
+                            standard_key_bindings(right_lower_arm, 4+1);
                         };
                 left_upper_leg->on_render = [&]()
                     {
-                        // move halfway
-                        // one block to the left of the chest
                         window.MV.translate(-0.6,-1.1,0);
                         standard_key_bindings(left_upper_leg, 1+1+4);
                     };
                     left_lower_leg->on_render = [&]()
                         {
-                            // one block down from the top of the leg
                             window.MV.translate(0,-1.1,0);
                             standard_key_bindings(left_lower_leg, 2+1+4);
                         };
                 right_upper_leg->on_render = [&]()
                     {
-                        // one block to the right of the chest
                         window.MV.translate(0.6,-1.1,0);
                         standard_key_bindings(right_upper_leg, 3+1+4);
                     };
                     right_lower_leg->on_render = [&]()
                         {
-                            standard_key_bindings(right_lower_leg, 4+1+4);
-                            // one block down from the top of the leg
                             window.MV.translate(0,-1.1,0);
+                            standard_key_bindings(right_lower_leg, 4+1+4);
                         };
         // 
         // Attach all the Renderables
