@@ -353,55 +353,74 @@ int main(int argc, char** argv)
                         window.MV.scale(0.5, 0.5, 0.5);
                         window.MV.translate(0,0.5,0);
                     };
+                vec3 arm_scale           = vec3(0.3, 0.8, 0.3);
+                vec3 inverse_arm_scale   = vec3(1/arm_scale.x, 1/arm_scale.y, 1/arm_scale.z);
+                vec3 arm_offset          = vec3(0.65 , -0.5, 0);
+                vec3 lower_arm_translate = vec3(0, -0.5 * arm_scale.y, 0 );
                 left_upper_arm->on_render = [&]()
                     {
                         window.MV.translate(-0.5, 0.5,0);
-                        standard_key_bindings(left_upper_arm, 1+1);
-                        window.MV.scale(0.5, 1, 0.5);
-                        window.MV.translate(-0.55, -0.5, 0);
+                        standard_key_bindings(left_upper_arm, 2);
+                        window.MV.scale(arm_scale);
+                        window.MV.translate(-arm_offset.x, arm_offset.y, arm_offset.z);
                     };
                     left_lower_arm->on_render = [&]()
                         {
-                            window.MV.scale(2, 1, 2);
-                            window.MV.translate(0,-0.5,0);
-                            standard_key_bindings(left_lower_arm, 2+1);
-                            window.MV.scale(0.5, 1, 0.5);
-                            window.MV.translate(0,-0.5,0);
+                            window.MV.scale(inverse_arm_scale);
+                            window.MV.translate(lower_arm_translate);
+                            standard_key_bindings(left_lower_arm, 3);
+                            window.MV.scale(arm_scale);
+                            window.MV.translate(lower_arm_translate);
                         };
                 right_upper_arm->on_render = [&]()
                     {
                         window.MV.translate(0.5, 0.5,0);
-                        standard_key_bindings(right_upper_arm, 3+1);
-                        window.MV.scale(0.5, 1, 0.5);
-                        window.MV.translate(0.55,-0.5,0);
+                        standard_key_bindings(right_upper_arm, 4);
+                        window.MV.scale(arm_scale);
+                        window.MV.translate(arm_offset.x, arm_offset.y, arm_offset.z);
                     };
                     right_lower_arm->on_render = [&]()
                         {
-                            window.MV.scale(2, 1, 2);
-                            window.MV.translate(0,-0.5,0);
-                            standard_key_bindings(right_lower_arm, 4+1);
-                            window.MV.scale(0.5, 1, 0.5);
-                            window.MV.translate(0,-0.5,0);
+                            window.MV.scale(inverse_arm_scale);
+                            window.MV.translate(lower_arm_translate);
+                            standard_key_bindings(right_lower_arm, 5);
+                            window.MV.scale(arm_scale);
+                            window.MV.translate(lower_arm_translate);
                         };
+                vec3 leg_scale           = vec3(0.4, 1, 0.4);
+                vec3 inverse_leg_scale   = vec3(1/leg_scale.x, 1/leg_scale.y, 1/leg_scale.z);
+                vec3 leg_rotate_axis     = vec3(0.25, -0.5, 0);
+                vec3 leg_offset          = vec3(0, -0.5, 0);
+                vec3 lower_leg_translate = vec3(0, -0.5 * leg_scale.y, 0 );
                 left_upper_leg->on_render = [&]()
                     {
-                        window.MV.translate(-0.6,-1.1,0);
-                        standard_key_bindings(left_upper_leg, 1+1+4);
+                        window.MV.translate(-leg_rotate_axis.x, leg_rotate_axis.y, leg_rotate_axis.z);
+                        standard_key_bindings(left_upper_leg, 6);
+                        window.MV.scale(leg_scale);
+                        window.MV.translate(leg_offset);
                     };
                     left_lower_leg->on_render = [&]()
                         {
-                            window.MV.translate(0,-1.1,0);
-                            standard_key_bindings(left_lower_leg, 2+1+4);
+                            window.MV.scale(inverse_leg_scale);
+                            window.MV.translate(lower_leg_translate);
+                            standard_key_bindings(left_lower_leg, 7);
+                            window.MV.scale(leg_scale);
+                            window.MV.translate(lower_leg_translate);
                         };
                 right_upper_leg->on_render = [&]()
                     {
-                        window.MV.translate(0.6,-1.1,0);
-                        standard_key_bindings(right_upper_leg, 3+1+4);
+                        window.MV.translate(leg_rotate_axis.x, leg_rotate_axis.y, leg_rotate_axis.z);
+                        standard_key_bindings(right_upper_leg, 8);
+                        window.MV.scale(leg_scale);
+                        window.MV.translate(leg_offset);
                     };
                     right_lower_leg->on_render = [&]()
                         {
-                            window.MV.translate(0,-1.1,0);
-                            standard_key_bindings(right_lower_leg, 4+1+4);
+                            window.MV.scale(inverse_leg_scale);
+                            window.MV.translate(lower_leg_translate);
+                            standard_key_bindings(right_lower_leg, 9);
+                            window.MV.scale(leg_scale);
+                            window.MV.translate(lower_leg_translate);
                         };
         // 
         // Attach all the Renderables
