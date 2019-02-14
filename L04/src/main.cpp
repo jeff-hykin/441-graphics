@@ -377,8 +377,10 @@ int main(int argc, char** argv)
                     };
                     right_lower_arm->on_render = [&]()
                         {
+                            window.MV.scale(2, 1, 2);
                             window.MV.translate(0,-0.5,0);
                             standard_key_bindings(right_lower_arm, 4+1);
+                            window.MV.scale(0.5, 1, 0.5);
                             window.MV.translate(0,-0.5,0);
                         };
                 left_upper_leg->on_render = [&]()
