@@ -359,7 +359,7 @@ int main(int argc, char** argv)
                 vec3 arm_scale           = vec3(0.3, 0.8, 0.3);
                 vec3 inverse_arm_scale   = vec3(1/arm_scale.x, 1/arm_scale.y, 1/arm_scale.z);
                 vec3 arm_offset          = vec3(0.65 , -0.5, 0);
-                vec3 lower_arm_translate = vec3(0, -0.5 * arm_scale.y, 0 );
+                vec3 lower_arm_translate = vec3(0, -0.55 * arm_scale.y, 0 );
                 left_upper_arm->on_render = [&]()
                     {
                         window.MV.translate(-0.5, 0.5,0);
