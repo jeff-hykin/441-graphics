@@ -341,10 +341,10 @@ struct RenderManager
 struct Cubeiod : public Renderable
     {
         // data
-            int test = 0;
             Matrix4 transforms; // persistant memory of the transformations
             function<void(void)> on_render;
             vector<shared_ptr<Cubeiod>> children;
+            bool transform_was_applied = false;
         // constuctors
             Cubeiod()
                 {
@@ -355,13 +355,21 @@ struct Cubeiod : public Renderable
                     children = input_children;
                 }
         // methods
+            void transform()
+                {
+                    window.MV.multMatrix(transforms);
+                    transform_was_applied = true;
+                }
             void render() override
                 {
+                    transform_was_applied = false;
                     window.MV.pushMatrix();
                     // run the render function
                     on_render();
-                    // apply the persistant transformations
-                    window.MV.multMatrix(transforms);
+                    if (not transform_was_applied)
+                        {
+                            transform();
+                        }
                     // run the render function of each of the children
                     for (auto& each : children)
                         {

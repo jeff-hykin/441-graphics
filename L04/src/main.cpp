@@ -337,8 +337,8 @@ int main(int argc, char** argv)
                         if (key_manager.isPressed(GLFW_KEY_DOWN        ))  { object->transforms = translate(object->transforms.toMat4(), vec3(    0,     0, -0.05));  }
                         if (key_manager.isPressed(GLFW_KEY_RIGHT       ))  { object->transforms = translate(object->transforms.toMat4(), vec3( 0.05,     0,     0));  }
                         if (key_manager.isPressed(GLFW_KEY_LEFT        ))  { object->transforms = translate(object->transforms.toMat4(), vec3(-0.05,     0,     0));  }
-                        
-                        
+                        // tell the object to update itself
+                        head->transform();
                     }
             };
             auto undo_torso_changes = [&](){
@@ -351,13 +351,17 @@ int main(int argc, char** argv)
                 };
                 head->on_render = [&]()
                     {
-                        standard_key_bindings(head, 1);
+                        window.MV.scale(0.5, 0.5, 0.5);
                         window.MV.translate(0,1,0);
+                        standard_key_bindings(head, 1);
+                        window.MV.translate(0,0.5,0);
                     };
                 left_upper_arm->on_render = [&]()
                     {
-                        window.MV.translate(-1.1,0,0);
+                        window.MV.scale(0.5, 1, 0.5);
+                        window.MV.translate(-1,1,0);
                         standard_key_bindings(left_upper_arm, 1+1);
+                        window.MV.translate(-0.55,-1,0);
                     };
                     left_lower_arm->on_render = [&]()
                         {
